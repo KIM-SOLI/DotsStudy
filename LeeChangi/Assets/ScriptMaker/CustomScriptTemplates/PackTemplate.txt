@@ -1,0 +1,52 @@
+using Unity.Entities;
+using Unity.Transforms;
+using Unity.Burst;
+
+
+public class [ScriptName]Authoring : UnityEngine.MonoBehaviour
+{
+    public class [ScriptName]Baker : Baker<[ScriptName]Authoring>
+    {
+        public override void Bake([ScriptName]Authoring authoring)
+        {
+            AddComponent(new [ScriptName]ComponentData { });
+        }
+    }
+}
+
+
+struct [ScriptName]ComponentData : IComponentData
+{
+}
+
+
+[BurstCompile]
+public partial struct [ScriptName]System : ISystem
+{
+	[BurstCompile]
+	public void OnCreate(ref SystemState state)
+	{
+		state.RequireForUpdate<[ScriptName]ComponentData>();
+	}
+
+	[BurstCompile]
+	public void OnDestroy(ref SystemState state)
+	{
+	}
+
+	[BurstCompile]
+	public void OnUpdate(ref SystemState state)
+	{
+		var job = new [ScriptName]Job { };
+		job.Schedule();
+	}
+}
+
+
+[BurstCompile]
+public partial struct [ScriptName]Job : IJobEntity
+{
+	void Execute(ref LocalTransform transform, in [ScriptName]ComponentData value)
+	{
+	}
+}

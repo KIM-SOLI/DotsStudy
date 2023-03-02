@@ -1,0 +1,12 @@
+using Unity.Entities;
+
+public class [ScriptName]Authoring : UnityEngine.MonoBehaviour
+{
+    public class [ScriptName]Baker : Baker<[ScriptName]Authoring>
+    {
+        public override void Bake([ScriptName]Authoring authoring)
+        {
+			//AddComponent(new [ScriptName]ComponentData { });
+        }
+    }
+}

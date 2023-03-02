@@ -1,0 +1,11 @@
+using Unity.Entities;
+using Unity.Transforms;
+
+readonly partial struct [ScriptName]Aspect : IAspect
+{
+    //public readonly Entity self;
+    //readonly RefRO<[ScriptName]> self;
+    //readonly RefRW<[ScriptName]> self;
+    readonly TransformAspect Transform;   
+
+}

@@ -1,0 +1,6 @@
+using Unity.Entities;
+
+struct [ScriptName]ComponentData : IComponentData
+{
+    //public float3 Position
+}
