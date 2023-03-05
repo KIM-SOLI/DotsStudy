@@ -5,6 +5,9 @@ using System.Numerics;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Data;
+using System.Linq;
+using Unity.Collections;
 
 [Serializable]
 public struct EnemySetData
@@ -20,7 +23,9 @@ public class EnemySetAuthoring : UnityEngine.MonoBehaviour
     {
         public override void Bake(EnemySetAuthoring authoring)
         {
-            AddComponent(new EnemySetComponentData { });
+            AddComponent(new EnemySetComponentData { 
+				
+			});
         }
     }
 }
