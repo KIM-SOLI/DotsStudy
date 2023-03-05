@@ -14,6 +14,8 @@ public struct TeamUnitSerialData
     public int Count;
     public Color color;
     public float3 position;
+
+    public float Speed;
 }
 
 
