@@ -3,6 +3,7 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 [UpdateAfter(typeof(InputSystem))]
 [BurstCompile]
@@ -15,6 +16,26 @@ partial struct MovementSystem : ISystem
         InputSystem.inputActionMap.FindAction("Click").performed += OnMouseClick;
         InputSystem.inputActionMap.FindAction("MouseMove").performed += OnMouseMove;
         InputSystem.inputActionMap.FindAction("Movement").performed += OnMovement;
+
+        if (InputSystem.inputActionMap.enabled)
+        {
+            InputSystem.inputActionMap.Disable();
+        }
+
+        var newAction = InputSystem.inputActionMap.AddAction("Combo");
+        newAction.AddCompositeBinding("OneModifier").
+            With("Binding", "<Keyboard>/w").
+            With("Binding", "<Keyboard>/a").
+            With("Binding", "<Keyboard>/s").
+            With("Binding", "<Keyboard>/d").
+            With("Modifier", "<Keyboard>/leftCtrl");
+
+        newAction.performed += OnCombo;
+
+        if (!InputSystem.inputActionMap.enabled)
+        {
+            InputSystem.inputActionMap.Enable();
+        }
     }
 
     public void OnDestroy(ref SystemState state)
@@ -34,7 +55,7 @@ partial struct MovementSystem : ISystem
 
     public void OnMouseMove(InputAction.CallbackContext context)
     {
-        Debug.Log("Mouse Move!" + context.ReadValue<Vector2>());
+        //Debug.Log("Mouse Move!" + context.ReadValue<Vector2>());
     }
 
     public void OnMovement(InputAction.CallbackContext context)
@@ -56,6 +77,28 @@ partial struct MovementSystem : ISystem
         if (InputSystem.IsKeyDown(movementAction, "D"))
         {
             Debug.Log("MovementSystem d");
+        }
+    }
+
+    public void OnCombo(InputAction.CallbackContext context)
+    {
+        var comboAction = InputSystem.inputActionMap["Combo"];
+
+        if (InputSystem.IsKeyDown(comboAction, "W"))
+        {
+            Debug.Log("Combo w");
+        }
+        if (InputSystem.IsKeyDown(comboAction, "A"))
+        {
+            Debug.Log("Combo a");
+        }
+        if (InputSystem.IsKeyDown(comboAction, "S"))
+        {
+            Debug.Log("Combo s");
+        }
+        if (InputSystem.IsKeyDown(comboAction, "D"))
+        {
+            Debug.Log("Combo d");
         }
     }
 }

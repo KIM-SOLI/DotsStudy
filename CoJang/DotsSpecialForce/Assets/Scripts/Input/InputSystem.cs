@@ -15,8 +15,9 @@ partial struct InputSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         inputActionMap = new InputActionMap();
+
         AddMovementAction();
-        inputActionMap.AddAction("MouseMove", binding: "<Mouse>/position").AddBinding("<Touch>/position");
+        inputActionMap.AddAction("MouseMove", binding: "<Touch>/position").AddBinding("<Mouse>/position");
         inputActionMap.AddAction("Click", binding: "<Touch>/press").AddBinding("<Mouse>/leftButton");
         inputActionMap.AddAction("Jump", binding: "<Keyboard>/space");
 
