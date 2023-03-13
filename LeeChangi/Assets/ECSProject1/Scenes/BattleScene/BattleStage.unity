@@ -250,6 +250,7 @@ MonoBehaviour:
       x: 0
       y: 0
       z: 10
+    Speed: 0
   - TeamIndex: 1
     Count: 5
     color: {r: 0, g: 0.42652243, b: 0.6431373, a: 0}
@@ -257,6 +258,7 @@ MonoBehaviour:
       x: 10
       y: 0
       z: 0
+    Speed: 0
   - TeamIndex: 2
     Count: 5
     color: {r: 0.6698113, g: 0.10426309, b: 0.57188094, a: 0}
@@ -264,4 +266,5 @@ MonoBehaviour:
       x: -10
       y: 0
       z: 0
+    Speed: 0
   prefab: {fileID: 4569911970032586867, guid: df57d75d841d78c44b385e4955795c33, type: 3}

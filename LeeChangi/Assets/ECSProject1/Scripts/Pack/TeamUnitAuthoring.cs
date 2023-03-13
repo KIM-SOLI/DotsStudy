@@ -30,7 +30,7 @@ struct TeamUnitTarget : IComponentData
 
 readonly partial struct TeamUnitAspect : IAspect
 {
-    //readonly RefRO<TeamUnitComponentData> _unit;
+    readonly RefRO<TeamUnitComponentData> _unit;
     //readonly RefRW<TeamUnitTarget> _target;
     readonly TransformAspect Transform;
 
@@ -43,6 +43,11 @@ readonly partial struct TeamUnitAspect : IAspect
     //        _target.ValueRW.target = value;
     //    }
     //}
+
+    public int TeamIndex
+    {
+        get => _unit.ValueRO.TeamIndex;
+    }
 
     public float3 WorldPosition
     {
