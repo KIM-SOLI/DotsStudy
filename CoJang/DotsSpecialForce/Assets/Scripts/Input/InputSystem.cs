@@ -6,13 +6,22 @@ using Unity.Burst;
 using System;
 
 [BurstCompile]
-partial struct InputSystem : ISystem
+public partial class InputSystem : SystemBase
 {
     [SerializeField] private float mouseSensitivity;
 
     public static InputActionMap inputActionMap;
 
-    public void OnCreate(ref SystemState state)
+    /// <summary> 자주 호출이 필요하면 MouseMove 액션에서 가져다 쓸 것. </summary>
+
+    public static Vector2 MousePosition => inputActionMap["MouseMove"] == null ? Vector2.zero : inputActionMap["MouseMove"].ReadValue<Vector2>();
+    public static InputAction MouseMoveAction => inputActionMap["MouseMove"];
+    public static InputAction ClickAction => inputActionMap["Click"];
+    public static InputAction JumpAction => inputActionMap["MouseMove"];
+    public static InputAction MovementAction => inputActionMap["Movement"];
+
+    [BurstCompile]
+    protected override void OnCreate()
     {
         inputActionMap = new InputActionMap();
 
@@ -26,14 +35,16 @@ partial struct InputSystem : ISystem
         Debug.Log("InputSystem OnCreate!");
     }
 
-    public void OnDestroy(ref SystemState state)
+    [BurstCompile]
+    protected override void OnDestroy()
     {
         inputActionMap.Disable();
 
         Debug.Log("InputSystem OnDestroy!");
     }
 
-    public void OnUpdate(ref SystemState state)
+    [BurstCompile]
+    protected override void OnUpdate()
     {
     }
 
