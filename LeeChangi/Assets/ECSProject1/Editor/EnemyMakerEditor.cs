@@ -17,7 +17,7 @@ namespace Sampel1
 
             if (GUILayout.Button("Collect"))
             {
-                (target as EnemyMaker).Collect();
+                //(target as EnemyMaker).Collect();
             }
         }
     }
