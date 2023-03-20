@@ -10,7 +10,10 @@ public class TeamUnitAuthoring : UnityEngine.MonoBehaviour
         public override void Bake(TeamUnitAuthoring authoring)
         {
             AddComponent(new TeamUnitComponentData { });
-            AddComponent(new TeamUnitTarget { });
+            AddComponent(new TargetingEnemyUnitComponentData
+            {
+
+            });
         }
     }
 }
@@ -54,5 +57,5 @@ readonly partial struct TeamUnitAspect : IAspect
         get => Transform.LocalPosition;
         set => Transform.LocalPosition = value;
     }
-
+    
 }
