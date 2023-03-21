@@ -33,9 +33,20 @@ public readonly partial struct MovementAspect : IAspect
     readonly RefRO<MovementComponentData> compData;
     readonly TransformAspect transform;
 
-    public float3 WorldPosition
+    public float3 LocalPosition
     {
         get => transform.LocalPosition;
         set => transform.LocalPosition = value;
+    }
+
+    public float3 WorldPosition
+    {
+        get => transform.WorldPosition;
+        set => transform.WorldPosition = value;
+    }
+
+    public void MoveForward(float deltaTime)
+    {
+        transform.LocalPosition += transform.Forward * deltaTime;
     }
 }
