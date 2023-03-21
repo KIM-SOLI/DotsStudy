@@ -5,18 +5,16 @@ using UnityEngine;
 
 public class MovementAuthoring : UnityEngine.MonoBehaviour
 {
-    public float3 position;
+    public float MovementSpeed = 3.5f;
 
     public class MovementBaker : Baker<MovementAuthoring>
     {
         public override void Bake(MovementAuthoring authoring)
         {
-            //AddComponent(new MovementComponentData
-            //{
-
-            //});
-
-            AddComponent<MovementComponentData>();
+            AddComponent(new MovementComponentData
+            {
+                movementSpeed = authoring.MovementSpeed
+            });
         }
     }
 }
@@ -24,6 +22,7 @@ public class MovementAuthoring : UnityEngine.MonoBehaviour
 
 public struct MovementComponentData : IComponentData
 {
+    public float movementSpeed;
 }
 
 public readonly partial struct MovementAspect : IAspect

@@ -10,20 +10,23 @@ using Unity.Mathematics;
 [BurstCompile]
 partial struct MovementSystem : ISystem
 {
-    static Vector3 clickedPosition;
+    private NativeArray<Vector3> clickedPosition;
 
     public void OnCreate(ref SystemState state)
     {
         Debug.Log("MovementSystem OnCreate!");
-        InputSystem.ClickAction.performed += OnMouseClick;
+        clickedPosition = new NativeArray<Vector3>(1, Allocator.Persistent);
 
         state.RequireForUpdate<MovementComponentData>();
+        InputSystem.ClickAction.performed += OnMouseClick;
     }
 
     public void OnDestroy(ref SystemState state)
     {
-        InputSystem.ClickAction.performed -= OnMouseClick;
         Debug.Log("MovementSystem OnDestroy!");
+        InputSystem.ClickAction.performed -= OnMouseClick;
+
+        clickedPosition.Dispose();
     }
 
     [BurstCompile]
@@ -34,7 +37,7 @@ partial struct MovementSystem : ISystem
         var job = new MovementJob
         {
             deltaTime = delta,
-            destPoint = clickedPosition,
+            destPoint = clickedPosition[0],
         };
         job.Schedule();
     }
@@ -45,9 +48,9 @@ partial struct MovementSystem : ISystem
 
         if (Raycaster.ShootRay())
         {
-            //var rayInfo = Raycaster.LastRayInfo;
-            clickedPosition = Raycaster.Hit.point;
-            Debug.Log("MovementSystem OnRayHit: " + clickedPosition);
+            clickedPosition[0] = Raycaster.Hit.point;
+
+            Debug.Log("MovementSystem OnRayHit: " + clickedPosition[0]);
         }
 
     }
@@ -60,10 +63,10 @@ public partial struct MovementJob : IJobEntity
     [ReadOnly] public float3 destPoint;
     [ReadOnly] public float deltaTime;
 
-    void Execute(ref MovementAspect aspect)
+    void Execute(ref MovementAspect aspect, in MovementComponentData component)
     {
         float3 dir = destPoint - aspect.WorldPosition;
 
-        aspect.WorldPosition += dir * deltaTime;
+        aspect.WorldPosition += dir * component.movementSpeed * deltaTime;
     }
 }
