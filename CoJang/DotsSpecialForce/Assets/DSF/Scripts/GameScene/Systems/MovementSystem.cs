@@ -59,14 +59,11 @@ partial struct MovementSystem : ISystem
 [BurstCompile]
 public partial struct MovementJob : IJobEntity
 {
-    //[ReadOnly] public Vector3 destPoint;
     [ReadOnly] public float3 destPoint;
     [ReadOnly] public float deltaTime;
 
     void Execute(ref MovementAspect aspect, in MovementComponentData component)
     {
-        float3 dir = destPoint - aspect.WorldPosition;
-
-        aspect.WorldPosition += dir * component.movementSpeed * deltaTime;
+        aspect.MoveToPointOnlyXZ(destPoint, deltaTime);
     }
 }

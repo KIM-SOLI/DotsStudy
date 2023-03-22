@@ -44,8 +44,12 @@ public readonly partial struct MovementAspect : IAspect
         set => transform.WorldPosition = value;
     }
 
-    public void MoveForward(float deltaTime)
+
+    public void MoveToPointOnlyXZ(float3 destPoint, float deltaTime)
     {
-        transform.LocalPosition += transform.Forward * deltaTime;
+        var dir = (destPoint - LocalPosition) * compData.ValueRO.movementSpeed * deltaTime;
+
+        transform.LookAt(new float3(destPoint.x, 0, destPoint.z));
+        transform.LocalPosition += new float3(dir.x, 0, dir.z);
     }
 }
