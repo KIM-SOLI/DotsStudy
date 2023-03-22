@@ -1,6 +1,10 @@
+using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
 
@@ -20,7 +24,50 @@ namespace ScriptMaker
         public static readonly string PackTemplate = "PackTemplate.txt";
         public static readonly string TemplatePath = "ScriptMaker/CustomScriptTemplates";
 
+        internal static string RemoveOrInsertNamespace(string content, string rootNamespace)
+        {
+            string text = "#ROOTNAMESPACEBEGIN#";
+            string text2 = "#ROOTNAMESPACEEND#";
+            if (!content.Contains(text) || !content.Contains(text2))
+            {
+                return content;
+            }
 
+            if (string.IsNullOrEmpty(rootNamespace))
+            {
+                content = Regex.Replace(content, "((\\r\\n)|\\n)[ \\t]*" + text + "[ \\t]*", string.Empty);
+                content = Regex.Replace(content, "((\\r\\n)|\\n)[ \\t]*" + text2 + "[ \\t]*", string.Empty);
+                return content;
+            }
+
+            string separator = (content.Contains("\r\n") ? "\r\n" : "\n");
+            List<string> list = new List<string>(content.Split(new string[3] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
+            int i;
+            for (i = 0; i < list.Count && !list[i].Contains(text); i++)
+            {
+            }
+
+            string text3 = list[i];
+            string text4 = text3.Substring(0, text3.IndexOf("#"));
+            list[i] = "namespace " + rootNamespace;
+            list.Insert(i + 1, "{");
+            for (i += 2; i < list.Count; i++)
+            {
+                string text5 = list[i];
+                if (!string.IsNullOrEmpty(text5) && text5.Trim().Length != 0)
+                {
+                    if (text5.Contains(text2))
+                    {
+                        list[i] = "}";
+                        break;
+                    }
+
+                    list[i] = text4 + text5;
+                }
+            }
+
+            return string.Join(separator, list.ToArray());
+        }
     }
 
     public class AuthoringAndComponentDataScriptMaker : EndNameEditAction
@@ -58,6 +105,9 @@ namespace ScriptMaker
             className = className.Replace(" ", "");
             text = text.Replace("[ScriptName]", className);
             var encoding = new UTF8Encoding(true, false);
+
+            var rootNamespace = CompilationPipeline.GetAssemblyRootNamespaceFromScriptPath(pathName);
+            text = PathStrings.RemoveOrInsertNamespace(text, rootNamespace);
 
             pathName = Path.Combine(Path.GetDirectoryName(pathName), $"{className}Authoring.cs");
             File.WriteAllText(pathName, text, encoding);
@@ -97,6 +147,8 @@ namespace ScriptMaker
 
         public override void Action(int instanceId, string pathName, string resourceFile)
         {
+         
+
             var text = File.ReadAllText(resourceFile);
 
             var className = Path.GetFileNameWithoutExtension(pathName);
@@ -104,6 +156,9 @@ namespace ScriptMaker
             className = className.Replace(" ", "");
             text = text.Replace("[ScriptName]", className);
             var encoding = new UTF8Encoding(true, false);
+
+            var rootNamespace = CompilationPipeline.GetAssemblyRootNamespaceFromScriptPath(pathName);
+            text = PathStrings.RemoveOrInsertNamespace(text, rootNamespace);
 
             pathName = Path.Combine(Path.GetDirectoryName(pathName), $"{className}Authoring.cs");
             File.WriteAllText(pathName, text, encoding);
@@ -150,6 +205,9 @@ namespace ScriptMaker
             text = text.Replace("[ScriptName]", className);
             var encoding = new UTF8Encoding(true, false);
 
+            var rootNamespace = CompilationPipeline.GetAssemblyRootNamespaceFromScriptPath(pathName);
+            text = PathStrings.RemoveOrInsertNamespace(text, rootNamespace);
+
             pathName = Path.Combine(Path.GetDirectoryName(pathName), $"{className}ComponentData.cs");
             File.WriteAllText(pathName, text, encoding);
 
@@ -195,6 +253,9 @@ namespace ScriptMaker
             className = className.Replace(" ", "");
             text = text.Replace("[ScriptName]", className);
             var encoding = new UTF8Encoding(true, false);
+
+            var rootNamespace = CompilationPipeline.GetAssemblyRootNamespaceFromScriptPath(pathName);
+            text = PathStrings.RemoveOrInsertNamespace(text, rootNamespace);
 
             pathName = Path.Combine(Path.GetDirectoryName(pathName), $"{className}Aspect.cs");
             File.WriteAllText(pathName, text, encoding);
@@ -243,6 +304,9 @@ namespace ScriptMaker
             text = text.Replace("[ScriptName]", className);
             var encoding = new UTF8Encoding(true, false);
 
+            var rootNamespace = CompilationPipeline.GetAssemblyRootNamespaceFromScriptPath(pathName);
+            text = PathStrings.RemoveOrInsertNamespace(text, rootNamespace);
+
             pathName = Path.Combine(Path.GetDirectoryName(pathName), $"{className}System.cs");
             File.WriteAllText(pathName, text, encoding);
 
@@ -287,6 +351,9 @@ namespace ScriptMaker
             className = className.Replace(" ", "");
             text = text.Replace("[ScriptName]", className);
             var encoding = new UTF8Encoding(true, false);
+
+            var rootNamespace = CompilationPipeline.GetAssemblyRootNamespaceFromScriptPath(pathName);
+            text = PathStrings.RemoveOrInsertNamespace(text, rootNamespace);
 
             pathName = Path.Combine(Path.GetDirectoryName(pathName), $"{className}System.cs");
             File.WriteAllText(pathName, text, encoding);
@@ -335,6 +402,9 @@ namespace ScriptMaker
             text = text.Replace("[ScriptName]", className);
             var encoding = new UTF8Encoding(true, false);
 
+            var rootNamespace = CompilationPipeline.GetAssemblyRootNamespaceFromScriptPath(pathName);
+            text = PathStrings.RemoveOrInsertNamespace(text, rootNamespace);
+
             pathName = Path.Combine(Path.GetDirectoryName(pathName), $"{className}Job.cs");
             File.WriteAllText(pathName, text, encoding);
 
@@ -368,6 +438,9 @@ namespace ScriptMaker
             className = className.Replace(" ", "");
             text = text.Replace("[ScriptName]", className);
             var encoding = new UTF8Encoding(true, false);
+
+            var rootNamespace = CompilationPipeline.GetAssemblyRootNamespaceFromScriptPath(pathName);
+            text = PathStrings.RemoveOrInsertNamespace(text, rootNamespace);
 
             pathName = Path.Combine(Path.GetDirectoryName(pathName), $"{className}Authoring.cs");
             File.WriteAllText(pathName, text, encoding);

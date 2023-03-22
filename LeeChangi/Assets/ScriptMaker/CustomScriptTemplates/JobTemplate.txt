@@ -3,6 +3,8 @@ using Unity.Entities;
 using Unity.Transforms;
 
 
+#ROOTNAMESPACEBEGIN#
+
 [BurstCompile]
 public partial struct MovementJob : IJobEntity
 {
@@ -19,3 +21,6 @@ public partial struct MovementJob : IJobEntity
 		if (transform.Position.z > +size) transform.Position.z -= size * 2;
 	}
 }
+
+
+#ROOTNAMESPACEEND#

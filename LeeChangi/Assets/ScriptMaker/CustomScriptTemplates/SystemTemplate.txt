@@ -2,6 +2,7 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
 
+#ROOTNAMESPACEBEGIN#
 
 [BurstCompile]
 public partial struct [ScriptName]System : ISystem
@@ -23,3 +24,5 @@ public partial struct [ScriptName]System : ISystem
 		//job.ScheduleParallel();
 	}
 }
+
+#ROOTNAMESPACEEND#

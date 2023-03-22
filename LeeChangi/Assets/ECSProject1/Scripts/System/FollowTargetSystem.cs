@@ -1,11 +1,9 @@
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Transforms;
 using Unity.Burst;
 
-#ROOTNAMESPACEBEGIN#
-
 [BurstCompile]
-public partial struct [ScriptName]System : ISystem
+public partial struct FollowTargetSystem : ISystem
 {
 	[BurstCompile]
 	public void OnCreate(ref SystemState state)
@@ -20,20 +18,21 @@ public partial struct [ScriptName]System : ISystem
 	[BurstCompile]
 	public void OnUpdate(ref SystemState state)
 	{
-		//var job = new [ScriptName]Job { };
+		//var job = new FollowTargetJob { };
 		//job.ScheduleParallel();
 	}
 }
 
 
 [BurstCompile]
-public partial struct [ScriptName]Job : IJobEntity
+public partial struct FollowTargetJob : IJobEntity
 {
 	public float Delta;
 
-	void Execute(ref LocalTransform transform, in [ScriptName]ComponentData value)
+	void Execute(ref LocalTransform transform, in TargetingEnemyUnitComponentData value)
 	{
+		
 	}
 }
 
-#ROOTNAMESPACEEND#
+

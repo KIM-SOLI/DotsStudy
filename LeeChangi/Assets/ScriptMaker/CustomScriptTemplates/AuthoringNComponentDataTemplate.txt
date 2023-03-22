@@ -1,5 +1,7 @@
 using Unity.Entities;
 
+#ROOTNAMESPACEBEGIN#
+
 public class [ScriptName]Authoring : UnityEngine.MonoBehaviour
 {
     public class [ScriptName]Baker : Baker<[ScriptName]Authoring>
@@ -16,3 +18,5 @@ struct [ScriptName]ComponentData : IComponentData
 {
     //public float3 Position
 }
+
+#ROOTNAMESPACEEND#

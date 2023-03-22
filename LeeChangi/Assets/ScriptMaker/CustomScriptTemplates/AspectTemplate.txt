@@ -1,6 +1,7 @@
 using Unity.Entities;
 using Unity.Transforms;
-
+    
+	#ROOTNAMESPACEBEGIN#
 readonly partial struct [ScriptName]Aspect : IAspect
 {
     //public readonly Entity self;
@@ -9,3 +10,4 @@ readonly partial struct [ScriptName]Aspect : IAspect
     readonly TransformAspect Transform;   
 
 }
+#ROOTNAMESPACEEND#

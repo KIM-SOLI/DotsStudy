@@ -62,7 +62,7 @@ public partial struct TargetingEnemyUnitSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-
+        //unitQuery.setfil
         var unitCount = unitQuery.CalculateEntityCount();
         var world = state.WorldUnmanaged;
         var delta = SystemAPI.Time.DeltaTime;

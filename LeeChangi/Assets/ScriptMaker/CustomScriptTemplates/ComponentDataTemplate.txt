@@ -1,6 +1,11 @@
 using Unity.Entities;
 
+
+#ROOTNAMESPACEBEGIN#
+
 struct [ScriptName]ComponentData : IComponentData
 {
     //public float3 Position
 }
+
+#ROOTNAMESPACEEND#
