@@ -24,6 +24,9 @@ namespace Assets.Scripts.Systems
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            // TODO : 지금은 공격없음
+            state.Enabled = false;
+
             var deltaTime = SystemAPI.Time.DeltaTime;
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var brainEntity = SystemAPI.GetSingletonEntity<BrainTag>();
