@@ -15,11 +15,11 @@ namespace Sampel1
 		[BurstCompile]
 		public void OnCreate(ref SystemState state)
 		{
-			using var unitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
-				//.WithNone<FindT>()
-				.WithAllRW<LocalToWorld>();
-			unitQuery = state.GetEntityQuery(unitQueryBuilder);
-			state.RequireForUpdate(unitQuery);
+			//using var unitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+			//	//.WithNone<FindT>()
+			//	.WithAllRW<LocalToWorld>();
+			//unitQuery = state.GetEntityQuery(unitQueryBuilder);
+			//state.RequireForUpdate(unitQuery);
 		}
 
 		[BurstCompile]
