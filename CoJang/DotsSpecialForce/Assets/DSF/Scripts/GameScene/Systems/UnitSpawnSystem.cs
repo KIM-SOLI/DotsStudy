@@ -9,9 +9,13 @@ using Unity.Collections;
 [BurstCompile]
 public partial struct UnitSpawnSystem : ISystem
 {
+    private NativeArray<Vector3> clickedPosition;
+
     [BurstDiscard]
     public void OnCreate(ref SystemState state)
     {
+        clickedPosition = new NativeArray<Vector3>(1, Allocator.Persistent);
+
         InputSystem.inputActionMap.Disable();
 
         var action = InputSystem.inputActionMap.AddAction("CtrlClick");
@@ -32,11 +36,21 @@ public partial struct UnitSpawnSystem : ISystem
         {
             action.performed -= OnCtrlClick;
         }
+
+        clickedPosition.Dispose();
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        var delta = SystemAPI.Time.DeltaTime;
+
+        var chaseJob = new ChaserJob
+        {
+            deltaTime = delta,
+            targetPosition = float3.zero,
+        };
+        chaseJob.Schedule();
     }
 
     [BurstDiscard]
@@ -46,19 +60,33 @@ public partial struct UnitSpawnSystem : ISystem
 
         if (Raycaster.ShootRay())
         {
+            clickedPosition[0] = new Vector3(Raycaster.Hit.point.x, 0, Raycaster.Hit.point.z);
+
             var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            var unitQuery = entityManager.CreateEntityQuery(typeof(MovementComponentData));
 
             var spawnQuery = entityManager.CreateEntityQuery(typeof(SpawnComponent));
             var setting = spawnQuery.GetSingleton<SpawnComponent>();
             var entity = entityManager.Instantiate(setting.unitPrefab);
 
-            entityManager.SetComponentData(entity, new LocalTransform { Position = Raycaster.Hit.point });
+            entityManager.SetComponentData(entity, new LocalTransform { Position = clickedPosition[0], Scale = 1.5f });
+            entityManager.AddComponent<ChaserTag>(entity);
         }
     }
 }
 
-public partial struct SpawnJob : IJobEntity
+public struct ChaserTag : IComponentData
 {
 
+}
+
+public partial struct ChaserJob : IJobEntity
+{
+    [ReadOnly] public float deltaTime;
+    [ReadOnly] public float3 targetPosition;
+
+    void Execute(ref LocalTransform transform, in ChaserTag tag)
+    {
+        var dir = targetPosition - transform.Position;
+        transform.Position += dir * deltaTime;
+    }
 }
