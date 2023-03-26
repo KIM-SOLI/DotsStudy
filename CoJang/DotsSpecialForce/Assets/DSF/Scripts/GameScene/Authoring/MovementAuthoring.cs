@@ -15,10 +15,17 @@ public class MovementAuthoring : MonoBehaviour
             {
                 movementSpeed = authoring.MovementSpeed
             });
+
+            AddComponent<PlayerTag>();
         }
     }
 }
 
+
+public struct PlayerTag : IComponentData
+{
+
+}
 
 public struct MovementComponentData : IComponentData
 {

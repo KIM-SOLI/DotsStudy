@@ -43,14 +43,6 @@ public partial struct UnitSpawnSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var delta = SystemAPI.Time.DeltaTime;
-
-        var chaseJob = new ChaserJob
-        {
-            deltaTime = delta,
-            targetPosition = float3.zero,
-        };
-        chaseJob.Schedule();
     }
 
     [BurstDiscard]
@@ -71,22 +63,5 @@ public partial struct UnitSpawnSystem : ISystem
             entityManager.SetComponentData(entity, new LocalTransform { Position = clickedPosition[0], Scale = 1.5f });
             entityManager.AddComponent<ChaserTag>(entity);
         }
-    }
-}
-
-public struct ChaserTag : IComponentData
-{
-
-}
-
-public partial struct ChaserJob : IJobEntity
-{
-    [ReadOnly] public float deltaTime;
-    [ReadOnly] public float3 targetPosition;
-
-    void Execute(ref LocalTransform transform, in ChaserTag tag)
-    {
-        var dir = targetPosition - transform.Position;
-        transform.Position += dir * deltaTime;
     }
 }
