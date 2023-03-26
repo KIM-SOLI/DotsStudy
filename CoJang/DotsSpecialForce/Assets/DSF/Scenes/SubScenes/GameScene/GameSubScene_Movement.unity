@@ -258,7 +258,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a129a843add7f4049bc53662e8978cfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitPrefab: {fileID: 1561563535240217501, guid: 22412d54623748e419d77c7286ddad66, type: 3}
+  unitPrefab: {fileID: 5494023225780780963, guid: 81c7fa6037e274e478f691fbda058bae, type: 3}
 --- !u!4 &743325442
 Transform:
   m_ObjectHideFlags: 0
@@ -288,7 +288,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1561563535240217473, guid: 22412d54623748e419d77c7286ddad66, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 2.43
       objectReference: {fileID: 0}
     - target: {fileID: 1561563535240217473, guid: 22412d54623748e419d77c7286ddad66, type: 3}
       propertyPath: m_LocalPosition.y

@@ -3,7 +3,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 
-public class MovementAuthoring : UnityEngine.MonoBehaviour
+public class MovementAuthoring : MonoBehaviour
 {
     public float MovementSpeed = 3.5f;
 
