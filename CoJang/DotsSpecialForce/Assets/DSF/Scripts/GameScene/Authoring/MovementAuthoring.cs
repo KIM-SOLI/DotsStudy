@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class MovementAuthoring : MonoBehaviour
 {
-    public float MovementSpeed = 3.5f;
+    public float MovementSpeed = 10.0f;
 
     public class MovementBaker : Baker<MovementAuthoring>
     {
@@ -54,7 +54,10 @@ public readonly partial struct MovementAspect : IAspect
 
     public void MoveToPointOnlyXZ(float3 destPoint, float deltaTime)
     {
-        var dir = (destPoint - LocalPosition) * compData.ValueRO.movementSpeed * deltaTime;
+        Vector3 dir = destPoint - LocalPosition;
+        dir.Normalize();
+
+        dir *= compData.ValueRO.movementSpeed * deltaTime;
 
         transform.LookAt(new float3(destPoint.x, 0, destPoint.z));
         transform.LocalPosition += new float3(dir.x, 0, dir.z);
