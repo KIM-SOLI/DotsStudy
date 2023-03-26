@@ -13,7 +13,7 @@ public partial struct FollowEnemySystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        state.Enabled = false;
+        //state.Enabled = false;
         using var unitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
             .WithAll<TeamUnitComponentData>()
             .WithAllRW<LocalToWorld>();

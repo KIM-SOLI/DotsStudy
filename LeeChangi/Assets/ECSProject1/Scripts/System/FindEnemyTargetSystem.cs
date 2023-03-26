@@ -6,7 +6,7 @@ using Unity.Collections;
 
 namespace Sampel1
 {
-
+    [DisableAutoCreation]
 	[BurstCompile]
 	public partial struct FindEnemyTargetSystem : ISystem
 	{
