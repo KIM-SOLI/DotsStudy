@@ -1,3 +1,4 @@
+using MathExtension;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -50,17 +51,22 @@ public partial struct ChaserJob : IJobEntity
         }
         else
         {
-            var dir = targetPosition - transform.LocalPosition;
-
-            // extension¿∏∑Œ ª¨ ∞Õ
-            var tempDir = new Vector3(dir.x, 0, dir.z);
-            tempDir.Normalize();
-
-            dir = tempDir;
-
+            var dir = (targetPosition - transform.LocalPosition).Normalize();
             transform.LocalPosition += dir * deltaTime * 1.5f;
         }
 
-        transform.LookAt(new float3(targetPosition.x, 0, targetPosition.z));
+        transform.LookAt(targetPosition.float3_XNZ());
+    }
+}
+
+public partial struct CircleCollisionJob : IJobEntity
+{
+    [ReadOnly] public float boundary;
+    [ReadOnly] public float deltaTime;
+    [ReadOnly] public NativeArray<WorldTransform> OtherTransforms;
+
+    void Execute(ref TransformAspect transform, in ChaserTag tag)
+    {
+
     }
 }
