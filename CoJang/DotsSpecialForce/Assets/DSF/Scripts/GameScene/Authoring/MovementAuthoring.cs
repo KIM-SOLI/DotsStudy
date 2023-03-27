@@ -1,3 +1,4 @@
+using MathExtension;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -54,12 +55,10 @@ public readonly partial struct MovementAspect : IAspect
 
     public void MoveToPointOnlyXZ(float3 destPoint, float deltaTime)
     {
-        Vector3 dir = destPoint - LocalPosition;
-        dir.Normalize();
-
+        float3 dir = (destPoint - LocalPosition).Normalize();
         dir *= compData.ValueRO.movementSpeed * deltaTime;
 
-        transform.LookAt(new float3(destPoint.x, 0, destPoint.z));
-        transform.LocalPosition += new float3(dir.x, 0, dir.z);
+        transform.LookAt(destPoint.float3_XNZ());
+        transform.LocalPosition += dir.float3_XNZ();
     }
 }
