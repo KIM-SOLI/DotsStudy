@@ -47,6 +47,11 @@ namespace MathExtension
             return new float3(a.x, a.y, N);
         }
 
+        public static float3 NormalizedDirAB(float3 a, float3 b)
+        {
+            return (a - b).Normalize();
+        }
+
         #endregion
 
 
@@ -100,6 +105,11 @@ namespace MathExtension
         public static Vector3 Vector3_XYN(this Vector3 a, float N = 0)
         {
             return new Vector3(a.x, a.y, N);
+        }
+
+        public static Vector3 NormalizedDirAB(Vector3 a, Vector3 b)
+        {
+            return (a - b).normalized;
         }
 
         #endregion
