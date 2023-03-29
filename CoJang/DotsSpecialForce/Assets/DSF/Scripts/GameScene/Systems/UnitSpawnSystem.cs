@@ -1,3 +1,4 @@
+using MathExtension;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -9,9 +10,13 @@ using Unity.Collections;
 [BurstCompile]
 public partial struct UnitSpawnSystem : ISystem
 {
+    private NativeArray<Vector3> clickedPosition;
+
     [BurstDiscard]
     public void OnCreate(ref SystemState state)
     {
+        clickedPosition = new NativeArray<Vector3>(1, Allocator.Persistent);
+
         InputSystem.inputActionMap.Disable();
 
         var action = InputSystem.inputActionMap.AddAction("CtrlClick");
@@ -32,6 +37,8 @@ public partial struct UnitSpawnSystem : ISystem
         {
             action.performed -= OnCtrlClick;
         }
+
+        clickedPosition.Dispose();
     }
 
     [BurstCompile]
@@ -46,19 +53,16 @@ public partial struct UnitSpawnSystem : ISystem
 
         if (Raycaster.ShootRay())
         {
+            clickedPosition[0] = Raycaster.Hit.point.Vector3_XNZ();
+
             var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            var unitQuery = entityManager.CreateEntityQuery(typeof(MovementComponentData));
 
             var spawnQuery = entityManager.CreateEntityQuery(typeof(SpawnComponent));
             var setting = spawnQuery.GetSingleton<SpawnComponent>();
             var entity = entityManager.Instantiate(setting.unitPrefab);
 
-            entityManager.SetComponentData(entity, new LocalTransform { Position = Raycaster.Hit.point });
+            entityManager.SetComponentData(entity, new LocalTransform { Position = clickedPosition[0], Scale = 1.5f });
+            entityManager.AddComponent<ChaserTag>(entity);
         }
     }
-}
-
-public partial struct SpawnJob : IJobEntity
-{
-
 }

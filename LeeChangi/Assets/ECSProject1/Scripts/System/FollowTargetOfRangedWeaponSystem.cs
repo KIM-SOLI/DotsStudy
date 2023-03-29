@@ -2,6 +2,7 @@
 using Unity.Transforms;
 using Unity.Burst;
 
+[DisableAutoCreation]
 [BurstCompile]
 public partial struct FollowTargetOfRangedWeaponSystem : ISystem
 {

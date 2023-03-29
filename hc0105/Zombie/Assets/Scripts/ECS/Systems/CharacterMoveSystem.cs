@@ -2,6 +2,7 @@
 using Assets.Scripts.ComponentsAndTags;
 using Assets.Scripts.ECS.Authorings;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -11,6 +12,7 @@ namespace Assets.Scripts.Systems
     [BurstCompile]
     public partial struct CharacterMoveSystem : ISystem
     {
+
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {

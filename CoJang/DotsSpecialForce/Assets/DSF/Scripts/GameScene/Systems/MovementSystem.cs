@@ -38,6 +38,7 @@ partial struct MovementSystem : ISystem
         {
             deltaTime = delta,
             destPoint = clickedPosition[0],
+            epsilon = 0.5f
         };
         job.Schedule();
     }
@@ -62,8 +63,13 @@ public partial struct MovementJob : IJobEntity
     [ReadOnly] public float3 destPoint;
     [ReadOnly] public float deltaTime;
 
+    [ReadOnly] public float epsilon;
+
     void Execute(ref MovementAspect aspect, in MovementComponentData component)
     {
-        aspect.MoveToPointOnlyXZ(destPoint, deltaTime);
+        if (math.distancesq(aspect.LocalPosition, destPoint) > epsilon)
+        {
+            aspect.MoveToPointOnlyXZ(destPoint, deltaTime);
+        }
     }
 }

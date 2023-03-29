@@ -39,7 +39,7 @@ public readonly partial struct TargetingEnemyUnitAspect : IAspect
     }
 }
 
-
+[DisableAutoCreation]
 [BurstCompile]
 public partial struct TargetingEnemyUnitSystem : ISystem
 {
@@ -47,6 +47,7 @@ public partial struct TargetingEnemyUnitSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
+        //state.Enabled = false;
         using var unitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
             .WithAll<TeamUnitComponentData>()
             .WithAllRW<LocalToWorld>();
