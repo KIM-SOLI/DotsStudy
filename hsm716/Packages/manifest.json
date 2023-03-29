@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.bendz.dots.animation": "https://github.com/Bendzae/unity-dots-animation.git",
     "com.havok.physics": "1.0.0-pre.44",
     "com.unity.collab-proxy": "2.0.0",
     "com.unity.editorcoroutines": "1.0.0",

@@ -5,7 +5,7 @@ using UnityEngine;
 using Unity.Entities.Hybrid;
 using Random = UnityEngine.Random;
 
-
+/*
 
 public class Spawner : MonoBehaviour
 {
@@ -102,6 +102,7 @@ public class Spawner : MonoBehaviour
         {
             SpawnWave();
             spawnTimer = 0;
-        }*/
+        }
     }
 }
+*/

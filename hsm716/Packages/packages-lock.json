@@ -1,5 +1,15 @@
 {
   "dependencies": {
+    "com.bendz.dots.animation": {
+      "version": "https://github.com/Bendzae/unity-dots-animation.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.entities": "1.0.0-pre.15",
+        "com.unity.entities.graphics": "1.0.0-pre.15"
+      },
+      "hash": "ac9bd900374ce5de583d6216ef4fc15045dcafbd"
+    },
     "com.havok.physics": {
       "version": "1.0.0-pre.44",
       "depth": 0,

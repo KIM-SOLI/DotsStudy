@@ -48,6 +48,7 @@ partial struct SoliderMovementSystem : ISystem
             ecb = ecb
         }.ScheduleParallel();
 
+        
         //var tankTransform = SystemAPI.GetComponent<LocalToWorld>();
     }
 

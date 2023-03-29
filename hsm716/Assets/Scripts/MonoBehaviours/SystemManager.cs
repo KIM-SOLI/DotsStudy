@@ -11,6 +11,7 @@ public class SystemManager : MonoBehaviour
     public bool isActiveTurretRotationSystem;
     public bool isActiveTurretShootingSystem;
 
+    public AnimationClip clip1;
     private void Awake()
     {
         instance = this;
