@@ -1,3 +1,4 @@
+using MathExtension;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -33,6 +34,14 @@ public partial struct ChaserSystem : ISystem
             };
             chaseJob.ScheduleParallel();
         }
+
+        //var entityQueryBuilder = new EntityQueryBuilder(Allocator.TempJob).WithAll<WorldTransform>().WithAll<ChaserTag>();
+        //var entityQuery = state.GetEntityQuery(entityQueryBuilder);
+        //state.RequireForUpdate(entityQuery);
+
+        //var nativeArray =
+        //    CollectionHelper.CreateNativeArray<WorldTransform>(entityQuery.CalculateEntityCount(), Allocator.TempJob);
+
     }
 }
 
@@ -44,23 +53,36 @@ public partial struct ChaserJob : IJobEntity
 
     void Execute(ref TransformAspect transform, in ChaserTag tag)
     {
+        var dir = (targetPosition - transform.LocalPosition).Normalize();
+
         if (math.distancesq(transform.LocalPosition, targetPosition) <= boundary)
         {
             Debug.Log("I Got it!");
+            // transform.LocalPosition = targetPosition + (-dir * boundary); // 밀어내기 테스트
         }
         else
         {
-            var dir = targetPosition - transform.LocalPosition;
-
-            // extension으로 뺄 것
-            var tempDir = new Vector3(dir.x, 0, dir.z);
-            tempDir.Normalize();
-
-            dir = tempDir;
-
             transform.LocalPosition += dir * deltaTime * 1.5f;
         }
 
-        transform.LookAt(new float3(targetPosition.x, 0, targetPosition.z));
+        transform.LookAt(targetPosition.float3_XNZ());
+    }
+}
+
+public partial struct CircleCollisionJob : IJobEntity
+{
+    [ReadOnly] public float boundary;
+    [ReadOnly] public float deltaTime;
+    [ReadOnly] public NativeArray<float3> otherPositions;
+
+    void Execute(ref TransformAspect transform, in ChaserTag tag)
+    {
+        foreach (var position in otherPositions)
+        {
+            if (math.distancesq(transform.LocalPosition, position) <= boundary)
+            {
+                var dir = VectorExtension.NormalizedDirAB(transform.LocalPosition, position);
+            }
+        }
     }
 }

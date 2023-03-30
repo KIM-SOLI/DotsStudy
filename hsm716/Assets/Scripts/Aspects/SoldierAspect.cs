@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -17,8 +18,6 @@ public readonly partial struct SoldierAspect : IAspect
     
     private readonly TransformAspect transform;
 
-    private readonly PlayableGraph graph => m_Soldier.ValueRO.graph;
-    private readonly AnimationMixerPlayable mixerPlayable => m_Soldier.ValueRO.mixerPlayable;
 
     public void Move(float deltaTime) 
     {

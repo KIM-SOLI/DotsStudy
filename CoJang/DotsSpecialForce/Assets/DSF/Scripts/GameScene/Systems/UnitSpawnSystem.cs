@@ -1,3 +1,4 @@
+using MathExtension;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -52,7 +53,7 @@ public partial struct UnitSpawnSystem : ISystem
 
         if (Raycaster.ShootRay())
         {
-            clickedPosition[0] = new Vector3(Raycaster.Hit.point.x, 0, Raycaster.Hit.point.z);
+            clickedPosition[0] = Raycaster.Hit.point.Vector3_XNZ();
 
             var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
