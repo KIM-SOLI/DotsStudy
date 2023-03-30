@@ -10,10 +10,18 @@ using UnityEngine;
 
 namespace Sample1
 {
-    public class SubSceneWithSystem : SubSceneEx
+    
+    public interface IGetBakedSystem
+    {
+        Type GetSystemType();
+    }
+
+    public class SubSceneWithSystem : SubScene
     {
         [SerializeField] [ClassExtendsAttribute(typeof(IGetBakedSystem))] List<ClassTypeReference> initializedSystems;
-       
+
+        [SerializeField] public IGetBakedSystem[] onAwakeSystems;
+
         private void Start()
         {
             Init();
@@ -49,8 +57,24 @@ namespace Sample1
                 onAwakeSystems = systems.ToArray();
             }
         }
-      
 
-        
+
+        void LoadSystem()
+        {
+
+            var world = World.DefaultGameObjectInjectionWorld;
+            {
+                if (onAwakeSystems != null)
+                {
+
+                    DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(world,
+                        onAwakeSystems.Select((x) => x.GetSystemType()));
+
+
+                    
+                }
+            }
+        }
+
     }
 }

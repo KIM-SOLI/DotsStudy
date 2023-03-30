@@ -8,7 +8,7 @@ using Unity.Scenes;
 
 namespace Sampel1
 {
-	[UpdateInGroup(typeof(Version2SystemComponentGroup))]
+	
     [DisableAutoCreation]
 	[BurstCompile]
 	public partial struct FindEnemyTargetSystem : ISystem

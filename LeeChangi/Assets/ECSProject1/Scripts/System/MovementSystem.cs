@@ -6,7 +6,7 @@ using Unity.Collections;
 using UnityEngine.UIElements;
 
 
-
+[DisableAutoCreation]
 [BurstCompile]
 public partial struct MovementSystem : ISystem
 {

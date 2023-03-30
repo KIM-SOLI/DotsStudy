@@ -16,7 +16,7 @@ namespace Sample1
     public class TestSystemAuthoring : IGetBakedSystem
     {
         public TestSystemAuthoring(){}
-        public override Type GetSystemType()
+        public Type GetSystemType()
         {
             return typeof(TestSystem);
         }
