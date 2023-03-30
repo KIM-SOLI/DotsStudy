@@ -78,7 +78,7 @@ struct TeamUnitSpawnSet : IComponentData
     public Entity baseEntity;
 }
 
-
+[DisableAutoCreation]
 [BurstCompile]
 public partial struct TeamUnitSpawnerSystem : ISystem
 {

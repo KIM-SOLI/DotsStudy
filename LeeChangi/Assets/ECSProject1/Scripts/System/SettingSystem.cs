@@ -6,6 +6,7 @@ using Unity.Transforms;
 //using Unity.VisualScripting.FullSerializer;
 
 
+[DisableAutoCreation]
 [BurstCompile]
 public partial struct SettingSystem : ISystem
 {
