@@ -1,11 +1,14 @@
-﻿using Unity.Entities;
+﻿using Sample1;
+using Unity.Entities;
 using Unity.Transforms;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Scenes;
 
 
 namespace Sampel1
 {
+	[UpdateInGroup(typeof(Version2SystemComponentGroup))]
     [DisableAutoCreation]
 	[BurstCompile]
 	public partial struct FindEnemyTargetSystem : ISystem
@@ -20,7 +23,8 @@ namespace Sampel1
 			//	.WithAllRW<LocalToWorld>();
 			//unitQuery = state.GetEntityQuery(unitQueryBuilder);
 			//state.RequireForUpdate(unitQuery);
-		}
+			SubScene scene;
+        }
 
 		[BurstCompile]
 		public void OnDestroy(ref SystemState state)

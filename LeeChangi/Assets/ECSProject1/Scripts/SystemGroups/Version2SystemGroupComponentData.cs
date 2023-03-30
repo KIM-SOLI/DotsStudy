@@ -1,11 +1,12 @@
 ﻿using Sampel1;
 using Unity.Entities;
+using Unity.Scenes;
 
 
 namespace Sample1
 {
 
-    public class Version2SystemGroupComponentData : ComponentSystemGroup
+    public class Version2SystemComponentGroup : ComponentSystemGroup
     {
 
     }
@@ -14,7 +15,6 @@ namespace Sample1
     {
         public override void Update()
         {
-            
         }
     }
 
