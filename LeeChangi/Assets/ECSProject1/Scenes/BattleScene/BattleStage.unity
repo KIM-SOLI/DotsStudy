@@ -224,25 +224,25 @@ MonoBehaviour:
     Count: 5
     color: {r: 0.5283019, g: 0, b: 0, a: 0}
     position:
-      x: -10
+      x: -5
       y: 0
-      z: -10
+      z: -5
     Speed: 1
   - TeamIndex: 1
     Count: 5
     color: {r: 0, g: 0.086345784, b: 0.5754717, a: 0}
     position:
-      x: 10
+      x: 5
       y: 0
-      z: 10
+      z: 5
     Speed: 1
   - TeamIndex: 2
     Count: 5
     color: {r: 0, g: 0.7264151, b: 0.119688734, a: 0}
     position:
-      x: -10
+      x: -5
       y: 0
-      z: 10
+      z: 5
     Speed: 1
   prefab: {fileID: 4569911970032586867, guid: df57d75d841d78c44b385e4955795c33, type: 3}
 --- !u!1 &1135020594

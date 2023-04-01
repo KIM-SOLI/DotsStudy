@@ -18,7 +18,7 @@ namespace ScriptMaker
         public static readonly string AuthoringPath = "AuthoringTemplate.txt";
         public static readonly string AspectPath = "AspectTemplate.txt";
         public static readonly string ComponentDataPath = "ComponentDataTemplate.txt";
-        public static readonly string SystemDataPath = "SystemAndTemplate.txt";
+        public static readonly string SystemDataPath = "SystemTemplate.txt";
         public static readonly string SystemAndJobmDataPath = "SystemAndJobTemplate.txt";
         public static readonly string JobDataPath = "JobTemplate.txt";
         public static readonly string PackTemplate = "PackTemplate.txt";

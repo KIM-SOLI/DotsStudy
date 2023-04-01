@@ -10,10 +10,6 @@ public class TeamUnitAuthoring : UnityEngine.MonoBehaviour
         public override void Bake(TeamUnitAuthoring authoring)
         {
             AddComponent(new TeamUnitComponentData { });
-            AddComponent(new TargetingEnemyUnitComponentData
-            {
-
-            });
         }
     }
 }
@@ -22,14 +18,17 @@ public class TeamUnitAuthoring : UnityEngine.MonoBehaviour
 struct TeamUnitComponentData : IComponentData
 {
 	public int TeamIndex;
-    public float Speed;
 }
 
-struct TeamUnitTarget : IComponentData
+struct RangedWeaponComponentData : IComponentData
 {
-    public TeamUnitComponentData target;
+    public float Range;
 }
 
+struct EnemyTargetComponentData : IEnableableComponent
+{
+    public Entity target;
+}
 
 readonly partial struct TeamUnitAspect : IAspect
 {

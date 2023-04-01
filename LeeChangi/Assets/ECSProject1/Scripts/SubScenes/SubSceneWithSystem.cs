@@ -10,23 +10,31 @@ using UnityEngine;
 
 namespace Sample1
 {
-    
+
     public interface IGetBakedSystem
     {
-        Type GetSystemType();
+        public Type GetSystemType();
     }
 
     public class SubSceneWithSystem : SubScene
     {
-        [SerializeField] [ClassExtendsAttribute(typeof(IGetBakedSystem))] List<ClassTypeReference> initializedSystems;
+        [SerializeField][ClassExtendsAttribute(typeof(IGetBakedSystem))] List<ClassTypeReference> initializedSystems;
 
         [SerializeField] public IGetBakedSystem[] onAwakeSystems;
+        private List<SystemHandle> onAwakeSystemHandles;
 
         private void Start()
         {
-            Init();
-            LoadSystem();
+            if (Application.isPlaying)
+            {
+                Init();
+                LoadSystem();
+            }
+            
         }
+
+
+     
 
         private void Init()
         {
@@ -39,13 +47,6 @@ namespace Sample1
                     {
                         continue;
                     }
-
-                    var constructors = item.Type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-                    var constructors2 = item.Type.GetConstructors(BindingFlags.CreateInstance);
-
-                    //constructors.orEach((x)=> Debug.Log(x)) ;
-                    //Debug.Log(constructors)
-
                     var constructor = item.Type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, Array.Empty<ParameterModifier>());
                     if (constructor?.Invoke(Array.Empty<object>()) is IGetBakedSystem system)
                     {
@@ -61,20 +62,24 @@ namespace Sample1
 
         void LoadSystem()
         {
-
+            onAwakeSystemHandles = new List<SystemHandle>();
             var world = World.DefaultGameObjectInjectionWorld;
             {
                 if (onAwakeSystems != null)
                 {
-
-                    DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(world,
-                        onAwakeSystems.Select((x) => x.GetSystemType()));
-
-
-                    
+                    SimulationSystemGroup orCreateSystemManaged2 = world.GetOrCreateSystemManaged<SimulationSystemGroup>();
+                    foreach(var system in onAwakeSystems)
+                    {
+                        var handle = (world.GetOrCreateSystem(system.GetSystemType()));
+                        orCreateSystemManaged2.AddSystemToUpdateList(handle);
+                        onAwakeSystemHandles.Add(handle);
+                    }
+                    //DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(world,onAwakeSystems.Select((x) => x.GetSystemType()));
                 }
             }
         }
+
+      
 
     }
 }
