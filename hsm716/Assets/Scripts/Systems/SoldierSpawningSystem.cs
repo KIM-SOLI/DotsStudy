@@ -29,6 +29,7 @@ partial struct SoldierSpawningSystem : ISystem
 
     public void OnUpdate(ref SystemState state)
     {
+        
         var config = SystemAPI.GetSingleton<Config>();
 
         var random = Unity.Mathematics.Random.CreateFromIndex(1234);
@@ -44,7 +45,7 @@ partial struct SoldierSpawningSystem : ISystem
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
-        var vehicles = CollectionHelper.CreateNativeArray<Entity>(5000, Allocator.Temp);
+        var vehicles = CollectionHelper.CreateNativeArray<Entity>(100, Allocator.Temp);
         ecb.Instantiate(config.TankPrefab, vehicles);
         
         var queryMask = m_BaseColorQuery.GetEntityQueryMask();
@@ -59,11 +60,27 @@ partial struct SoldierSpawningSystem : ISystem
                 Rotation = quaternion.identity,
                 Scale = 1f
             });
-
-           
+            ecb.AddComponent(vehicle,new EnemyTag());
         }
-        vehicles.Dispose(); 
-        // This system should only run once at startup. So it disables itself after one update.
+        vehicles.Dispose();
+
+
+        vehicles = CollectionHelper.CreateNativeArray<Entity>(5, Allocator.Temp);
+        ecb.Instantiate(config.MeSoldierPrefab, vehicles);
+
+        foreach (var vehicle in vehicles)
+        {
+            ecb.SetComponent(vehicle, new LocalTransform
+            {
+                Position = new float3(random.NextInt(-5, 5), 0, random.NextInt(-5, 5)),
+                Rotation = quaternion.identity,
+                Scale = 1f
+            });
+        }
+        vehicles.Dispose();
+
+
+
         state.Enabled = false;
     }
 }

@@ -35,5 +35,17 @@ public readonly partial struct SoldierAspect : IAspect
         }
     }
 
+    public void EnemyMove(float deltaTime)
+    {
+        float3 targetPosition = targetComponent.ValueRO.targetPosition;
+        float3 pos = transform.LocalPosition;
+
+        float3 moveDirection = math.normalize(targetPosition - pos);
+
+        transform.LocalPosition += targetPosition * deltaTime * targetComponent.ValueRO.moveSpeed;
+        transform.LocalPosition = new float3(transform.LocalPosition.x, 0.01f, transform.LocalPosition.z);
+        transform.LookAt(targetPosition);
+    }
+
 
 }

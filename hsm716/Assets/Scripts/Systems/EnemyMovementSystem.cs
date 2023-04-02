@@ -17,15 +17,15 @@ using static UnityEngine.GraphicsBuffer;
 // They are not Burst compiled, and can use managed code.
 
 [BurstCompile]
-partial struct SoliderMovementSystem : ISystem
+partial struct EnemyMovementSystem : ISystem
 {
-    EntityQuery soldierQuery;
+    EntityQuery enemyQuery;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        soldierQuery = SystemAPI.QueryBuilder().WithNone<EnemyTag>().WithAll<Soldier>().Build();
-        state.RequireForUpdate(soldierQuery);
+        enemyQuery = SystemAPI.QueryBuilder().WithAll<Soldier, EnemyTag>().Build();
+        state.RequireForUpdate(enemyQuery);
     }
 
     [BurstCompile]
@@ -41,17 +41,15 @@ partial struct SoliderMovementSystem : ISystem
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-        new SoldierMoveJob
+        new EnemyMoveJob
         {
             dt = dt,
             ecb = ecb
         }.ScheduleParallel();
-
-        //var tankTransform = SystemAPI.GetComponent<LocalToWorld>();
     }
 
     [BurstCompile]
-    public partial struct SoldierMoveJob : IJobEntity
+    public partial struct EnemyMoveJob : IJobEntity
     {
         public float dt;
         public EntityCommandBuffer.ParallelWriter ecb;
@@ -59,7 +57,7 @@ partial struct SoliderMovementSystem : ISystem
         [BurstCompile]
         private void Execute(SoldierAspect soldier)
         {
-            soldier.Move(dt);
+            soldier.EnemyMove(dt);
         }
     }
 }

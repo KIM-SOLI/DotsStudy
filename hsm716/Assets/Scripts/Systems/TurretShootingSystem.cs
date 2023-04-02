@@ -62,9 +62,9 @@ partial struct TurretShoot : IJobEntity
     // Making it "ref" (read-write) would not make a difference in this case, but you
     // will encounter situations where potential race conditions trigger the safety system.
     // So in general, using "in" everywhere possible is a good principle.
-    void Execute(in TurretAspect turret)
+    void Execute(/*in TurretAspect turret*/)
     {
-        var instance = ECB.Instantiate(turret.CannonBallPrefab);
+        /*var instance = ECB.Instantiate(turret.CannonBallPrefab);
         var spawnLocalToWorld = WorldTransformLookup[turret.CannonBallSpawn];
         var cannonBallTransform = LocalTransform.FromPosition(spawnLocalToWorld.Position);
 
@@ -77,6 +77,6 @@ partial struct TurretShoot : IJobEntity
             Speed = spawnLocalToWorld.Forward() * 20.0f
         });
 
-        ECB.SetComponent(instance, new URPMaterialPropertyBaseColor { Value = turret.Color });
+        ECB.SetComponent(instance, new URPMaterialPropertyBaseColor { Value = turret.Color });*/
     }
 }

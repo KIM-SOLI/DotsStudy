@@ -12,8 +12,6 @@ class SoldierAuthoring : UnityEngine.MonoBehaviour
     {
         public override void Bake(SoldierAuthoring authoring)
         {
-            
-
             AddComponent(new MoveToTarget());
             AddComponent(new Soldier()
             {
