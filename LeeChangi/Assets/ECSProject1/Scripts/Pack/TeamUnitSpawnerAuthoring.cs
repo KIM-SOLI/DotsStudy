@@ -6,6 +6,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 using System;
 using Unity.Rendering;
+using Sample1;
 
 [Serializable]
 public struct TeamUnitSerialData

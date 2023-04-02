@@ -67,14 +67,14 @@ namespace Sample1
             {
                 if (onAwakeSystems != null)
                 {
-                    SimulationSystemGroup orCreateSystemManaged2 = world.GetOrCreateSystemManaged<SimulationSystemGroup>();
-                    foreach(var system in onAwakeSystems)
-                    {
-                        var handle = (world.GetOrCreateSystem(system.GetSystemType()));
-                        orCreateSystemManaged2.AddSystemToUpdateList(handle);
-                        onAwakeSystemHandles.Add(handle);
-                    }
-                    //DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(world,onAwakeSystems.Select((x) => x.GetSystemType()));
+                    //SimulationSystemGroup orCreateSystemManaged2 = world.GetOrCreateSystemManaged<SimulationSystemGroup>();
+                    //foreach(var system in onAwakeSystems)
+                    //{
+                    //    var handle = (world.GetOrCreateSystem(system.GetSystemType()));
+                    //    orCreateSystemManaged2.AddSystemToUpdateList(handle);
+                    //    onAwakeSystemHandles.Add(handle);
+                    //}
+                    DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(world,onAwakeSystems.Select((x) => x.GetSystemType()));
                 }
             }
         }

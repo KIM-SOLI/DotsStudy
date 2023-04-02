@@ -432,3 +432,4 @@ MonoBehaviour:
       w: 2847351021
   initializedSystems:
   - _classRef: Sample1.UnitSpawnSystemSystemAuthoring, ECSPrj1
+  - _classRef: Sample1.FindTargetSystemSystemAuthoring, ECSPrj1

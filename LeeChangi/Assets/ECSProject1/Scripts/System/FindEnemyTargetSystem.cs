@@ -23,7 +23,6 @@ namespace Sampel1
 			//	.WithAllRW<LocalToWorld>();
 			//unitQuery = state.GetEntityQuery(unitQueryBuilder);
 			//state.RequireForUpdate(unitQuery);
-			SubScene scene;
         }
 
 		[BurstCompile]

@@ -3,7 +3,7 @@ using Unity.Transforms;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
-
+using Sample1;
 
 public class TargetingEnemyUnitAuthoring : UnityEngine.MonoBehaviour
 {
@@ -28,15 +28,11 @@ public readonly partial struct TargetingEnemyUnitAspect : IAspect
     readonly TransformAspect transform;
     public readonly Entity self;
     readonly RefRO<TeamUnitComponentData> teamUnit;
-    readonly RefRW<TargetingEnemyUnitComponentData> targeting;
 
     public float3 WorldPosition => transform.WorldPosition;
     public int TeamIndex => teamUnit.ValueRO.TeamIndex;
 
-    public Entity Targeting
-    {
-        set => targeting.ValueRW.targetingEntity = value;
-    }
+    
 }
 
 [DisableAutoCreation]
@@ -86,76 +82,15 @@ public partial struct TargetingEnemyUnitSystem : ISystem
         var copyTargetHandle = copyTargetJob.ScheduleParallel(unitQuery, unitChunkBaseIndexJobHandle);
 
 
-        var job = new TargetingEnemyUnitJob
-        {
-            teamIndices = copyUnitTeamIndices,
-            unitIds = copyUnitIds,
-            unitPositions = copyUnitPositions,
+        //var job = new TargetingEnemyUnitJob
+        //{
+        //    teamIndices = copyUnitTeamIndices,
+        //    unitIds = copyUnitIds,
+        //    unitPositions = copyUnitPositions,
 
-        };
+        //};
 
-        var targethandle = job.ScheduleParallel(unitQuery, copyTargetHandle);
-        state.Dependency = targethandle;
-    }
-}
-
-
-[BurstCompile]
-public partial struct TargetingEnemyUnitJob : IJobEntity
-{
-    [ReadOnly] public NativeArray<float3> unitPositions;
-    [ReadOnly] public NativeArray<Entity> unitIds;
-    [ReadOnly] public NativeArray<int> teamIndices;
-
-    void Execute(ref TargetingEnemyUnitAspect value)
-    {
-        var target = Entity.Null;
-
-        var maxSq = float.MaxValue;
-
-        for (var i = 0; i < unitIds.Length; i++)
-        {
-            var entity = teamIndices[i];
-            if (entity == value.TeamIndex)
-            {
-                continue;
-            }
-            var entityPos = unitPositions[i];
-
-            var nextSq = math.distancesq(value.WorldPosition, entityPos);
-            if (maxSq > nextSq)
-            {
-                maxSq = nextSq;
-                target = unitIds[i];
-            }
-        }
-
-        value.Targeting = target;
-        //value.
-        //var dir = math.normalize(targetPos - value.WorldPosition) * Delta;
-        //value.WorldPosition += (dir);
-
-
-    }
-}
-
-
-[BurstCompile]
-public partial struct InitialTargetEnemyUnitJob : IJobEntity
-{
-
-    [ReadOnly] public NativeArray<int> chunkBaseEntitiyIndices;
-    [NativeDisableParallelForRestriction] public NativeArray<float3> unitPositions;
-    [NativeDisableParallelForRestriction] public NativeArray<Entity> unitIds;
-    [NativeDisableParallelForRestriction] public NativeArray<int> unitTeamIndices;
-
-    void Execute([ChunkIndexInQuery] int chunkIndexInQuery, [EntityIndexInChunk] int entityIndexInChunk,
-        in TargetingEnemyUnitAspect value)
-    {
-        var entityIndexInQuery = chunkBaseEntitiyIndices[chunkIndexInQuery] + entityIndexInChunk;
-        unitPositions[entityIndexInQuery] = value.WorldPosition;
-        unitIds[entityIndexInQuery] = value.self;
-        unitTeamIndices[entityIndexInQuery] = value.TeamIndex;
-
+        //var targethandle = job.ScheduleParallel(unitQuery, copyTargetHandle);
+        //state.Dependency = targethandle;
     }
 }
