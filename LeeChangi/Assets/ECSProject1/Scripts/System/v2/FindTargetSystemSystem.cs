@@ -1,5 +1,6 @@
 ﻿using System;
 using Unity.Burst;
+using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -71,10 +72,10 @@ namespace Sample1
                 teamIndices = copyUnitTeamIndices,
                 unitIds = copyUnitIds,
                 unitPositions = copyUnitPositions,
-                //ecb = ecb,
+                ecb = ecb,
             };
 
-            var targethandle = job.ScheduleParallel(unitQuery, copyTargetHandle);
+            var targethandle = job.Schedule(copyTargetHandle);
             state.Dependency = targethandle;
         }
 	}
@@ -88,6 +89,7 @@ namespace Sample1
         [ReadOnly] public NativeArray<int> teamIndices;
         public EntityCommandBuffer ecb;
 
+        [BurstCompile]
         void Execute(in TeamUnitAspect value)
         {
             var target = Entity.Null;
@@ -112,17 +114,19 @@ namespace Sample1
             }
 
 
-            //ecb.SetComponent(value.Self, new EnemyTargetComponentData
-            //{
-            //    target = target,
-            //});
-            //ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), true);
+            if (target != Entity.Null)
+            {
+                ecb.SetComponent(value.Self, new EnemyTargetComponentData
+                {
+                    target = target,
+                });
+                ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), true);
 
-            //value.
-            //var dir = math.normalize(targetPos - value.WorldPosition) * Delta;
-            //value.WorldPosition += (dir);
-
-
+            }
+            else
+            {
+                ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), false);
+            }
         }
     }
 
@@ -137,6 +141,7 @@ namespace Sample1
         [NativeDisableParallelForRestriction] public NativeArray<Entity> unitIds;
         [NativeDisableParallelForRestriction] public NativeArray<int> unitTeamIndices;
 
+        [BurstCompile]
         void Execute([ChunkIndexInQuery] int chunkIndexInQuery, [EntityIndexInChunk] int entityIndexInChunk,
             in TeamUnitAspect value)
         {

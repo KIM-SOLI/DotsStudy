@@ -46,6 +46,7 @@ public partial struct TargetingEnemyUnitSystem : ISystem
         //state.Enabled = false;
         using var unitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
             .WithAll<TeamUnitComponentData>()
+            .WithNone<EnemyTargetComponentData>()
             .WithAllRW<LocalToWorld>();
         unitQuery = state.GetEntityQuery(unitQueryBuilder);
         state.RequireForUpdate(unitQuery);
@@ -80,17 +81,18 @@ public partial struct TargetingEnemyUnitSystem : ISystem
         };
 
         var copyTargetHandle = copyTargetJob.ScheduleParallel(unitQuery, unitChunkBaseIndexJobHandle);
-
+        //var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+        //var ecb = ecbSingleton.CreateCommandBuffer(world);
 
         //var job = new TargetingEnemyUnitJob
         //{
         //    teamIndices = copyUnitTeamIndices,
         //    unitIds = copyUnitIds,
         //    unitPositions = copyUnitPositions,
-
+        //    ecb = ecb,
         //};
-
+        
         //var targethandle = job.ScheduleParallel(unitQuery, copyTargetHandle);
-        //state.Dependency = targethandle;
+        state.Dependency = copyTargetHandle;
     }
 }
