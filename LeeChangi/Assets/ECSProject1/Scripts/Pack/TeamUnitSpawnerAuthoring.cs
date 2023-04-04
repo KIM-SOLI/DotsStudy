@@ -25,6 +25,7 @@ public class TeamUnitSpawnerAuthoring : UnityEngine.MonoBehaviour
 {
     public TeamUnitSerialData[] settings;
     public GameObject prefab;
+    public GameObject parent;
     public class TeamUnitSpawnerBaker : Baker<TeamUnitSpawnerAuthoring>
     {
         public override void Bake(TeamUnitSpawnerAuthoring authoring)
@@ -54,6 +55,7 @@ public class TeamUnitSpawnerAuthoring : UnityEngine.MonoBehaviour
             {
                 teamSetting = result,
                 baseEntity = GetEntity(authoring.prefab),
+                parentEntity = GetEntity(authoring.parent),
             });
         }
     }
@@ -77,6 +79,7 @@ struct TeamUnitSpawnSet : IComponentData
 {
     public BlobAssetReference<TeamUnits> teamSetting;
     public Entity baseEntity;
+    public Entity parentEntity;
 }
 
 [DisableAutoCreation]
@@ -115,7 +118,7 @@ public partial struct TeamUnitSpawnerSystem : ISystem
             {
                 ecb.SetComponent(crateUnits[j], new LocalTransform
                 {
-                    Position = unit.position + new float3(random.NextFloat(-2,2), 0, random.NextFloat(-2, 2)),
+                    Position = unit.position + new float3(random.NextFloat(-2, 2), 0, random.NextFloat(-2, 2)),
                     Rotation = quaternion.identity,
                     Scale = 1,
                 });

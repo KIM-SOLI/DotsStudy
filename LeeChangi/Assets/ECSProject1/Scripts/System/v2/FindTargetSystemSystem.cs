@@ -20,7 +20,7 @@ namespace Sample1
 	}
 
     [UpdateAfter(typeof(TransformSystemGroup))]
-    [UpdateAfter(typeof(UnitSpawnSystemSystem))]
+    [UpdateAfter(typeof(UnitSpawnSystem))]
 	[DisableAutoCreation]
 	[BurstCompile]
 	public partial struct FindTargetSystemSystem : ISystem
@@ -47,7 +47,7 @@ namespace Sample1
             var unitCount = unitQuery.CalculateEntityCount();
             var world = state.WorldUnmanaged;
 
-            
+                    
             var copyUnitPositions = CollectionHelper.CreateNativeArray<float3, RewindableAllocator>(unitCount, ref world.UpdateAllocator);
             var copyUnitIds = CollectionHelper.CreateNativeArray<Entity, RewindableAllocator>(unitCount, ref world.UpdateAllocator);
             var copyUnitTeamIndices = CollectionHelper.CreateNativeArray<int, RewindableAllocator>(unitCount, ref world.UpdateAllocator);
