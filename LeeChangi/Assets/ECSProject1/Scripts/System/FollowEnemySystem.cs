@@ -100,7 +100,7 @@ namespace Sample1
             }
             var dir = math.normalize(targetPos - value.WorldPosition) * Delta;
 
-            value.WorldPosition += (dir);
+            value.AddWorldPosition(dir);
         }
     }
 

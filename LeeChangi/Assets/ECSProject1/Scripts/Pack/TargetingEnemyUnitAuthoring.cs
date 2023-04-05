@@ -25,11 +25,11 @@ public struct TargetingEnemyUnitComponentData : IComponentData
 
 public readonly partial struct TargetingEnemyUnitAspect : IAspect
 {
-    readonly TransformAspect transform;
+    readonly RefRO<LocalToWorld> transform;
     public readonly Entity self;
     readonly RefRO<TeamUnitComponentData> teamUnit;
 
-    public float3 WorldPosition => transform.WorldPosition;
+    public float3 WorldPosition => transform.ValueRO.Position;
     public int TeamIndex => teamUnit.ValueRO.TeamIndex;
 
     

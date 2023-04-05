@@ -44,6 +44,8 @@ namespace Sample1
 		[BurstCompile]
 		public void OnUpdate(ref SystemState state)
 		{
+
+            //ComponentLookup<>
             var unitCount = unitQuery.CalculateEntityCount();
             var world = state.WorldUnmanaged;
 

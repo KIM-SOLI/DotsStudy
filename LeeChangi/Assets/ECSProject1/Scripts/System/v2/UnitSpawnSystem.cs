@@ -58,12 +58,13 @@ namespace Sample1
                 ecb.Instantiate(spawnSet.baseEntity, crateUnits);
                 for (var j = 0; j < unit.Count; j++)
                 {
-
-                    ecb.AddComponent(crateUnits[j], new LocalToWorld
+                    ecb.SetComponent(crateUnits[j], new PostTransformMatrix
                     {
-                        Value = float4x4.TRS(unit.position + new float3(random.NextFloat(-2, 2), 0, random.NextFloat(-2, 2)),
-                        quaternion.identity,1)
+                        Value = float4x4.TRS(
+                            unit.position + new float3(random.NextFloat(-2, 2), 0, random.NextFloat(-2, 2)),
+                            quaternion.identity, 1)
                     });
+                    
                     //new PostTransformMatrix { };
                     ecb.AddComponent(crateUnits[j], new Parent { Value = spawnSet.parentEntity });
                     //ecb.AddComponent(crateUnits[j], new ParentTransform { });
