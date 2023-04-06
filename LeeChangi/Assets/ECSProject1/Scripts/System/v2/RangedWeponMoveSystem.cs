@@ -46,6 +46,7 @@ namespace Sample1
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            var deltaTime = SystemAPI.Time.DeltaTime;
             var targetPositions = state.GetComponentLookup<LocalToWorld>(false);
 
             var job = new RangedWeaponSetMovePositionJob
@@ -58,7 +59,7 @@ namespace Sample1
 
             var moveJob = new RangedWeaponMoveToTargetJob
             {
-
+                DeltaTime = deltaTime,
             };
 
             var moveHandle = moveJob.ScheduleParallel(setpositionHandle);
@@ -82,7 +83,7 @@ namespace Sample1
                 var pos = targetPositions.GetRefRO(value.targetEntity);
                 var targetPos = pos.IsValid ? pos.ValueRO.Position : value.WorldPosition;
 
-                value.targetPosition = targetPos;
+               value.targetPosition = targetPos;
             }
         }
     }
@@ -91,6 +92,7 @@ namespace Sample1
     [BurstCompile]
     public partial struct RangedWeaponMoveToTargetJob : IJobEntity
     {
+        [ReadOnly] public float DeltaTime;
         [BurstCompile]
         void Execute(ref RangedWeaponUnitAspect value)
         {
@@ -100,7 +102,7 @@ namespace Sample1
             var rangeSq = math.pow(value.Range, 2);
             if (rangeSq < distanceSq)
             {
-                value.WorldPosition += math.normalize(targetPos - value.WorldPosition) * value.Speed;
+                value.WorldPosition += (math.normalize(targetPos - value.WorldPosition) * value.Speed * DeltaTime);
             }
         }
     }

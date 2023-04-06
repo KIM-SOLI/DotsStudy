@@ -48,8 +48,8 @@ namespace Sample1
     public readonly partial struct TeamUnitAspect : IAspect
     {
         readonly RefRW<TeamUnitComponentData> _unit;
-        readonly RefRW<LocalToWorld> Transform;
-        readonly RefRW<LocalTransform> localTransform;
+        readonly RefRW<LocalTransform> Transform;
+        //readonly RefRW<LocalTransform> localTransform;
 
         public readonly Entity Self;
 
@@ -60,17 +60,10 @@ namespace Sample1
 
         public float3 WorldPosition
         {
-            get => Transform.ValueRW.Position;
+            get => Transform.ValueRO.Position;
+            set => Transform.ValueRW.Position = value;
         }
 
-        public void AddWorldPosition(float3 point)
-        {
-            var origin = Transform.ValueRW.Value;
-            var next = origin.Translation() + point;
-            Transform.ValueRW.Value = float4x4.TRS(next,
-                origin.Rotation(),
-                origin.Scale());
-        }
 
     }
 
@@ -94,9 +87,11 @@ namespace Sample1
 
         public float3 WorldPosition
         {
-            get => Transform.ValueRW.Position;
+            get => Transform.ValueRO.Position;
             set => Transform.ValueRW.Position = value;
         }
-
+        
+        
+        
     }
 }

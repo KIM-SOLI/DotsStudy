@@ -31,6 +31,7 @@ namespace Sample1
 		{
             using var unitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
            .WithAll<TeamUnitComponentData>()
+           //.WithNone<EnemyTargetComponentData>()
            .WithAllRW<LocalToWorld>();
             unitQuery = state.GetEntityQuery(unitQueryBuilder);
             state.RequireForUpdate(unitQuery);
@@ -118,17 +119,16 @@ namespace Sample1
 
             if (target != Entity.Null)
             {
+                ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), true);
                 ecb.SetComponent(value.Self, new EnemyTargetComponentData
                 {
                     target = target,
                 });
-                ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), true);
-
             }
-            else
-            {
-                ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), false);
-            }
+            //else
+            //{
+            //    ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), false);
+            //}
         }
     }
 
