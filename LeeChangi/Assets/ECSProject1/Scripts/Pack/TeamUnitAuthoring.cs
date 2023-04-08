@@ -49,6 +49,7 @@ namespace Sample1
     {
         readonly RefRW<TeamUnitComponentData> _unit;
         readonly RefRW<LocalTransform> Transform;
+       
         //readonly RefRW<LocalTransform> localTransform;
 
         public readonly Entity Self;

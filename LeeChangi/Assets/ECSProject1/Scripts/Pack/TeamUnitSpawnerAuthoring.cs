@@ -30,6 +30,7 @@ public class TeamUnitSpawnerAuthoring : UnityEngine.MonoBehaviour
     {
         public override void Bake(TeamUnitSpawnerAuthoring authoring)
         {
+            var entity = GetEntity(TransformUsageFlags.Dynamic);
             if (authoring.settings == null || authoring.settings.Length == 0) { return; }
 
             var builder = new BlobBuilder(Unity.Collections.Allocator.Temp);
@@ -49,14 +50,17 @@ public class TeamUnitSpawnerAuthoring : UnityEngine.MonoBehaviour
                 };
             }
 
-            var result = builder.CreateBlobAssetReference<TeamUnits>(Unity.Collections.Allocator.Persistent);
+            
+
+            var result = builder.CreateBlobAssetReference<TeamUnits>(Allocator.Persistent);
             builder.Dispose();
-            AddComponent(new TeamUnitSpawnSet
+            AddComponent(entity ,new TeamUnitSpawnSet
             {
                 teamSetting = result,
-                baseEntity = GetEntity(authoring.prefab),
-                parentEntity = GetEntity(authoring.parent),
+                baseEntity = GetEntity(authoring.prefab, TransformUsageFlags.Dynamic),
+                parentEntity = GetEntity(authoring.parent, TransformUsageFlags.Dynamic),
             });
+            
         }
     }
 }

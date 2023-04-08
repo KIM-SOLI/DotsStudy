@@ -23,7 +23,7 @@ namespace Sample1
     public partial struct RangedWeponMoveSystem : ISystem
     {
         EntityQuery unitQuery;
-
+        ComponentLookup<LocalToWorld> targetPositions;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -35,7 +35,7 @@ namespace Sample1
 
             unitQuery = state.GetEntityQuery(unitQueryBuilder);
             state.RequireForUpdate(unitQuery);
-
+            targetPositions = state.GetComponentLookup<LocalToWorld>(false);
         }
 
         [BurstCompile]
@@ -47,9 +47,9 @@ namespace Sample1
         public void OnUpdate(ref SystemState state)
         {
             var deltaTime = SystemAPI.Time.DeltaTime;
-            var targetPositions = state.GetComponentLookup<LocalToWorld>(false);
+            targetPositions.Update(ref state);
 
-            var job = new RangedWeaponSetMovePositionJob
+             var job = new RangedWeaponSetMovePositionJob
             {
                 targetPositions = targetPositions,
 

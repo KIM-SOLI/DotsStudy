@@ -19,13 +19,15 @@ namespace Sample1
 		}
 	}
 
-    [UpdateAfter(typeof(TransformSystemGroup))]
-    [UpdateAfter(typeof(UnitSpawnSystem))]
+    //[UpdateAfter(typeof(TransformSystemGroup))]
+    //[UpdateAfter(typeof(UnitSpawnSystem))]
 	[DisableAutoCreation]
 	[BurstCompile]
 	public partial struct FindTargetSystemSystem : ISystem
     {
         EntityQuery unitQuery;
+        ComponentLookup<TeamUnitComponentData> teamIndices;
+        ComponentLookup<LocalTransform> unitPositions;
         [BurstCompile]
 		public void OnCreate(ref SystemState state)
 		{
@@ -35,6 +37,10 @@ namespace Sample1
            .WithAllRW<LocalToWorld>();
             unitQuery = state.GetEntityQuery(unitQueryBuilder);
             state.RequireForUpdate(unitQuery);
+
+            teamIndices = state.GetComponentLookup<TeamUnitComponentData>();
+            unitPositions = state.GetComponentLookup<LocalTransform>();
+
         }
 
 		[BurstCompile]
@@ -45,41 +51,23 @@ namespace Sample1
 		[BurstCompile]
 		public void OnUpdate(ref SystemState state)
 		{
-
-            //ComponentLookup<>
-            var unitCount = unitQuery.CalculateEntityCount();
-            var world = state.WorldUnmanaged;
-
-                    
-            var copyUnitPositions = CollectionHelper.CreateNativeArray<float3, RewindableAllocator>(unitCount, ref world.UpdateAllocator);
-            var copyUnitIds = CollectionHelper.CreateNativeArray<Entity, RewindableAllocator>(unitCount, ref world.UpdateAllocator);
-            var copyUnitTeamIndices = CollectionHelper.CreateNativeArray<int, RewindableAllocator>(unitCount, ref world.UpdateAllocator);
-            var unitChunkBaseEntityIndexArray = unitQuery.CalculateBaseEntityIndexArrayAsync(
-                world.UpdateAllocator.ToAllocator, state.Dependency,
-                out var unitChunkBaseIndexJobHandle);
-
-            var copyTargetJob = new InitialTargetEnemyUnitJob
-            {
-                chunkBaseEntitiyIndices = unitChunkBaseEntityIndexArray,
-                unitIds = copyUnitIds,
-                unitPositions = copyUnitPositions,
-                unitTeamIndices = copyUnitTeamIndices,
-            };
-
-            var copyTargetHandle = copyTargetJob.ScheduleParallel(unitQuery, unitChunkBaseIndexJobHandle);
+            unitPositions.Update(ref state);
+            teamIndices.Update(ref state);
+             var unitIds = unitQuery.ToEntityArray(Allocator.TempJob);
+            
 
             var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+            var world = state.WorldUnmanaged;
             var ecb = ecbSingleton.CreateCommandBuffer(world);
             var job = new TargetingEnemyUnitJob
             {
-                teamIndices = copyUnitTeamIndices,
-                unitIds = copyUnitIds,
-                unitPositions = copyUnitPositions,
+                teamIndices = teamIndices,
+                unitIds = unitIds,
+                unitPositions = unitPositions,
                 ecb = ecb,
             };
 
-            var targethandle = job.Schedule(copyTargetHandle);
-            state.Dependency = targethandle;
+            job.Schedule();
         }
 	}
 
@@ -87,12 +75,12 @@ namespace Sample1
     [BurstCompile]
     public partial struct TargetingEnemyUnitJob : IJobEntity
     {
-        [ReadOnly] public NativeArray<float3> unitPositions;
+        [ReadOnly] public ComponentLookup<LocalTransform> unitPositions;
+        [ReadOnly] public ComponentLookup<TeamUnitComponentData> teamIndices;
         [ReadOnly] public NativeArray<Entity> unitIds;
-        [ReadOnly] public NativeArray<int> teamIndices;
         public EntityCommandBuffer ecb;
 
-        [BurstCompile]
+        //[BurstCompile]
         void Execute(in TeamUnitAspect value)
         {
             var target = Entity.Null;
@@ -101,59 +89,56 @@ namespace Sample1
 
             for (var i = 0; i < unitIds.Length; i++)
             {
-                var entity = teamIndices[i];
-                if (entity == value.TeamIndex)
+                var entity = unitIds[i];
+                var other = teamIndices[entity];
+                if (other.TeamIndex == value.TeamIndex)
                 {
                     continue;
                 }
-                var entityPos = unitPositions[i];
+                var entityPos = unitPositions[entity];
 
-                var nextSq = math.distancesq(value.WorldPosition, entityPos);
+                var nextSq = math.distancesq(value.WorldPosition, entityPos.Position);
                 if (maxSq > nextSq)
                 {
                     maxSq = nextSq;
-                    target = unitIds[i];
+                    target = entity;
                 }
             }
 
 
             if (target != Entity.Null)
             {
-                ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), true);
+                ecb.SetComponentEnabled(value.Self, ComponentType.ReadOnly<EnemyTargetComponentData>(), true);
                 ecb.SetComponent(value.Self, new EnemyTargetComponentData
                 {
                     target = target,
                 });
             }
-            //else
-            //{
-            //    ecb.SetComponentEnabled(value.Self, typeof(EnemyTargetComponentData), false);
-            //}
         }
     }
 
 
 
-    [BurstCompile]
-    public partial struct InitialTargetEnemyUnitJob : IJobEntity
-    {
+    //[BurstCompile]
+    //public partial struct InitialTargetEnemyUnitJob : IJobEntity
+    //{
 
-        [ReadOnly] public NativeArray<int> chunkBaseEntitiyIndices;
-        [NativeDisableParallelForRestriction] public NativeArray<float3> unitPositions;
-        [NativeDisableParallelForRestriction] public NativeArray<Entity> unitIds;
-        [NativeDisableParallelForRestriction] public NativeArray<int> unitTeamIndices;
+    //    [ReadOnly] public NativeArray<int> chunkBaseEntitiyIndices;
+    //    [NativeDisableParallelForRestriction] public NativeArray<float3> unitPositions;
+    //    [NativeDisableParallelForRestriction] public NativeArray<Entity> unitIds;
+    //    [NativeDisableParallelForRestriction] public NativeArray<int> unitTeamIndices;
 
-        [BurstCompile]
-        void Execute([ChunkIndexInQuery] int chunkIndexInQuery, [EntityIndexInChunk] int entityIndexInChunk,
-            in TeamUnitAspect value)
-        {
-            var entityIndexInQuery = chunkBaseEntitiyIndices[chunkIndexInQuery] + entityIndexInChunk;
-            unitPositions[entityIndexInQuery] = value.WorldPosition;
-            unitIds[entityIndexInQuery] = value.Self;
-            unitTeamIndices[entityIndexInQuery] = value.TeamIndex;
+    //    [BurstCompile]
+    //    void Execute([ChunkIndexInQuery] int chunkIndexInQuery, [EntityIndexInChunk] int entityIndexInChunk,
+    //        in TeamUnitAspect value)
+    //    {
+    //        var entityIndexInQuery = chunkBaseEntitiyIndices[chunkIndexInQuery] + entityIndexInChunk;
+    //        unitPositions[entityIndexInQuery] = value.WorldPosition;
+    //        unitIds[entityIndexInQuery] = value.Self;
+    //        unitTeamIndices[entityIndexInQuery] = value.TeamIndex;
 
-        }
-    }
+    //    }
+    //}
 
 
 
