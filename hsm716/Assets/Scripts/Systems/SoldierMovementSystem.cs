@@ -24,7 +24,7 @@ partial struct SoliderMovementSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        soldierQuery = SystemAPI.QueryBuilder().WithNone<EnemyTag>().WithAll<Soldier>().Build();
+        soldierQuery = state.GetEntityQuery(ComponentType.ReadOnly<MySoldierTag>());
         state.RequireForUpdate(soldierQuery);
     }
 

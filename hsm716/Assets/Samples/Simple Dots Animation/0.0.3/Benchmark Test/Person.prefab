@@ -65,6 +65,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6386334262134128173, guid: c63623da1c28e401b9fae67f77eec90a,
         type: 3}
+      propertyPath: m_RootBone
+      value: 
+      objectReference: {fileID: 8833547191965951672}
+    - target: {fileID: -6386334262134128173, guid: c63623da1c28e401b9fae67f77eec90a,
+        type: 3}
       propertyPath: m_Materials.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -180,7 +185,7 @@ MonoBehaviour:
     x: 0
     y: 0
     z: 0
-  m_GravityFactor: 1
+  m_GravityFactor: 0
   m_OverrideDefaultMassDistribution: 0
   m_CenterOfMass:
     x: 0
@@ -367,3 +372,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec7f0122cb3d4c7181bfe0539ba5b8f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &8833547191965951672 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -163066445757010894, guid: c63623da1c28e401b9fae67f77eec90a,
+    type: 3}
+  m_PrefabInstance: {fileID: 516712947022137994}
+  m_PrefabAsset: {fileID: 0}

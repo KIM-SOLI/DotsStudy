@@ -3,6 +3,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 
 [BurstCompile]
@@ -36,15 +37,19 @@ partial class FindMouseToTargetSystem : SystemBase
             targetPosition = new float3(hit.point.x, 0, hit.point.z);
         }
 
-        if (!targetPosition.Equals(float3.zero))
+        
+
+        
+        // 이동할 엔티티에 MoveToMousePosition 컴포넌트 추가
+        Entities.WithAll<MoveToTarget, MySoldierTag>().ForEach((Entity entity, ref MoveToTarget moveComp) =>
         {
-            // 이동할 엔티티에 MoveToMousePosition 컴포넌트 추가
-            Entities.WithNone<EnemyTag>().ForEach((Entity entity, ref MoveToTarget moveComp) =>
+            if (!targetPosition.Equals(float3.zero))
             {
                 moveComp.targetPosition = targetPosition;
-                moveComp.moveSpeed = 5f;
-            }).Run();
-        }
+            }
+            moveComp.moveSpeed = 5f;
+        }).Run();
+        
 
         Entities.WithAll<MoveToTarget, EnemyTag>().ForEach((Entity entity, ref MoveToTarget moveComp,ref EnemyTag enemy) =>
         {
@@ -52,7 +57,7 @@ partial class FindMouseToTargetSystem : SystemBase
             moveComp.moveSpeed = 3f;
             if (enemy.dirChangeTime > 3f)
             {
-                moveComp.targetPosition = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0f, UnityEngine.Random.Range(-1f, 1f));//.normalized;
+                moveComp.targetPosition = new float3(UnityEngine.Random.Range(-1f, 1f), 0f, UnityEngine.Random.Range(-1f, 1f));
                 enemy.dirChangeTime = 0;
             }
         }).Run();

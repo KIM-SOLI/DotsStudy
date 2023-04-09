@@ -169,7 +169,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TankPrefab: {fileID: 4567412647723888907, guid: 6703b72dc9d906e4991b60dcc15d2f71,
     type: 3}
-  MeSoldierPrefab: {fileID: 858729997015496667, guid: ebd1e2a5cd26045af8b06073232f4153,
+  MeSoldierPrefab: {fileID: 4567412647723888907, guid: 6703b72dc9d906e4991b60dcc15d2f71,
     type: 3}
   TankCount: 15
   SafeZoneRadius: 20
@@ -202,7 +202,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 978013b872a14355a99e26f7a9f68745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 858729997015496667, guid: ebd1e2a5cd26045af8b06073232f4153, type: 3}
+  prefab: {fileID: 0}
   instances: 5
 --- !u!4 &1578653293
 Transform:

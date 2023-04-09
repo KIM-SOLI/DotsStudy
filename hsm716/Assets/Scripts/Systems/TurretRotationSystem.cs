@@ -27,10 +27,6 @@ partial struct TurretRotationSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        if (SystemManager.instance.isActiveTurretRotationSystem == false)
-        {
-            return;
-        }
         // The amount of rotation around Y required to do 360 degrees in 2 seconds.
         var rotation = quaternion.RotateY(SystemAPI.Time.DeltaTime * math.PI);
 

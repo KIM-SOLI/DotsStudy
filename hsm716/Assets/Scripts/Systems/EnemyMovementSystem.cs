@@ -24,7 +24,7 @@ partial struct EnemyMovementSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        enemyQuery = SystemAPI.QueryBuilder().WithAll<Soldier, EnemyTag>().Build();
+        enemyQuery = state.GetEntityQuery(ComponentType.ReadOnly<EnemyTag>());//SystemAPI.QueryBuilder().WithAll<EnemyTag>().Build();
         state.RequireForUpdate(enemyQuery);
     }
 
@@ -55,9 +55,9 @@ partial struct EnemyMovementSystem : ISystem
         public EntityCommandBuffer.ParallelWriter ecb;
 
         [BurstCompile]
-        private void Execute(SoldierAspect soldier)
+        private void Execute(EnemyAspect enemy)
         {
-            soldier.EnemyMove(dt);
+            enemy.EnemyMove(dt);
         }
     }
 }
