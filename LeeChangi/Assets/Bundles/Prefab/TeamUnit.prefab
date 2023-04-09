@@ -48,7 +48,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Range: 3
-  Speed: 1
+  LockOnRange: 1.5
+  LockOffRange: 2
+  Speed: 1.3
+  HP: 100
 --- !u!114 &4569911970032586870
 MonoBehaviour:
   m_ObjectHideFlags: 0

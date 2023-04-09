@@ -2,6 +2,7 @@
 using Unity.Transforms;
 using Unity.Burst;
 using Unity.Mathematics;
+using static UnityEngine.Rendering.DebugUI;
 
 
 namespace Sample1
@@ -9,16 +10,26 @@ namespace Sample1
 
     public class TeamUnitAuthoring : UnityEngine.MonoBehaviour
     {
-        public float Range = 1.5f;
-        public float Speed = 0.01f;
+        public float Range = 1f;
+        public float LockOnRange = 1.5f;
+        public float LockOffRange = 2f;
+        public float Speed = 1f;
+        public float HP = 100;
         public class TeamUnitBaker : Baker<TeamUnitAuthoring>
         {
             public override void Bake(TeamUnitAuthoring authoring)
             {
-                AddComponent(new TeamUnitComponentData { });
-                AddComponent(new EnemyTargetComponentData { });
-                AddComponent(new RangedWeaponComponentData {Range = authoring.Range });
-                AddComponent(new MovableUnitComponentData {moveSpeed = authoring.Speed });
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
+                AddComponent(entity, new TeamUnitComponentData { });
+                AddComponent(entity ,new EnemyTargetComponentData { });
+                AddComponent(entity ,new RangedWeaponComponentData {
+                    SafeDistance = authoring.Range,
+                    LockOffRange = authoring.LockOffRange,
+                    LockOnRange = authoring.LockOnRange,
+                });
+                AddComponent(entity, new MovableUnitComponentData {moveSpeed = authoring.Speed });
+                AddComponent(entity, new BodyStat { HP = authoring.HP, Armor = 0 });
+                AddComponent(entity, new LockOnTargetComponentData { });
             }
         }
     }
@@ -31,7 +42,10 @@ namespace Sample1
 
     public struct RangedWeaponComponentData : IComponentData
     {
-        public float Range;
+        public float SafeDistance;
+
+        public float LockOnRange;
+        public float LockOffRange;
     }
 
     public struct MovableUnitComponentData : IComponentData
@@ -45,54 +59,25 @@ namespace Sample1
         public float3 targetPosition;
     }
 
-    public readonly partial struct TeamUnitAspect : IAspect
+    public struct BodyStat : IComponentData
     {
-        readonly RefRW<TeamUnitComponentData> _unit;
-        readonly RefRW<LocalTransform> Transform;
-       
-        //readonly RefRW<LocalTransform> localTransform;
-
-        public readonly Entity Self;
-
-        public int TeamIndex
-        {
-            get => _unit.ValueRO.TeamIndex;
-        }
-
-        public float3 WorldPosition
-        {
-            get => Transform.ValueRO.Position;
-            set => Transform.ValueRW.Position = value;
-        }
-
-
+        public float HP;
+        public float Armor;
     }
 
+    public struct LockOnTargetComponentData : IComponentData, IEnableableComponent
+    {}
 
-    public readonly partial struct RangedWeaponUnitAspect : IAspect
+
+
+    public readonly partial struct TargetingEnemyUnitAspect : IAspect
     {
-        readonly RefRW<LocalTransform> Transform;
-        readonly RefRO<RangedWeaponComponentData> rangedWeapon;
-        readonly RefRO<MovableUnitComponentData> move;
-        readonly RefRW<EnemyTargetComponentData> target;
+        readonly RefRO<LocalToWorld> transform;
+        public readonly Entity self;
+        readonly RefRO<TeamUnitComponentData> teamUnit;
 
-        public float Range => rangedWeapon.ValueRO.Range;
-        public float Speed => move.ValueRO.moveSpeed;
-        public Entity targetEntity => target.ValueRO.target;
-
-        public float3 targetPosition
-        {
-            get => target.ValueRO.targetPosition;
-            set => target.ValueRW.targetPosition = value;
-        }
-
-        public float3 WorldPosition
-        {
-            get => Transform.ValueRO.Position;
-            set => Transform.ValueRW.Position = value;
-        }
-        
-        
-        
+        public float3 WorldPosition => transform.ValueRO.Position;
+        public int TeamIndex => teamUnit.ValueRO.TeamIndex;
     }
+
 }

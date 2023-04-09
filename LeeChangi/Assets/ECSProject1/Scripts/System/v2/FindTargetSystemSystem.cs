@@ -68,8 +68,32 @@ namespace Sample1
             };
 
             job.Schedule();
+
+            //unitIds.Dispose();
         }
 	}
+
+
+    public readonly partial struct TeamUnitAspect : IAspect
+    {
+        readonly RefRW<TeamUnitComponentData> _unit;
+        readonly RefRW<LocalTransform> Transform;
+
+        //readonly RefRW<LocalTransform> localTransform;
+
+        public readonly Entity Self;
+
+        public int TeamIndex
+        {
+            get => _unit.ValueRO.TeamIndex;
+        }
+
+        public float3 WorldPosition
+        {
+            get => Transform.ValueRO.Position;
+            set => Transform.ValueRW.Position = value;
+        }
+    }
 
 
     [BurstCompile]

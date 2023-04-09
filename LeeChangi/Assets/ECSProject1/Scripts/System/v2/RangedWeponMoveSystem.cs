@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine.EventSystems;
 
 namespace Sample1
 {
@@ -18,6 +19,40 @@ namespace Sample1
         }
     }
 
+
+    public readonly partial struct RangedWeaponUnitAspect : IAspect
+    {
+        readonly RefRW<LocalTransform> Transform;
+        readonly RefRO<RangedWeaponComponentData> rangedWeapon;
+        readonly RefRO<MovableUnitComponentData> move;
+        readonly RefRW<EnemyTargetComponentData> target;
+
+        public readonly Entity Self;
+
+
+        public float Range => rangedWeapon.ValueRO.SafeDistance;
+        public float LockOnRange => rangedWeapon.ValueRO.LockOnRange;
+        public float LockOffRange => rangedWeapon.ValueRO.LockOffRange;
+        public float Speed => move.ValueRO.moveSpeed;
+        public Entity targetEntity => target.ValueRO.target;
+
+        public float3 targetPosition
+        {
+            get => target.ValueRO.targetPosition;
+            set => target.ValueRW.targetPosition = value;
+        }
+
+
+
+        public float3 WorldPosition
+        {
+            get => Transform.ValueRO.Position;
+            set => Transform.ValueRW.Position = value;
+        }
+    }
+
+
+
     [DisableAutoCreation]
     [BurstCompile]
     public partial struct RangedWeponMoveSystem : ISystem
@@ -30,7 +65,6 @@ namespace Sample1
         {
             using var unitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<RangedWeaponComponentData>()
-                .WithAll<MovableUnitComponentData>()
                 .WithAll<EnemyTargetComponentData>();
 
             unitQuery = state.GetEntityQuery(unitQueryBuilder);
@@ -49,20 +83,24 @@ namespace Sample1
             var deltaTime = SystemAPI.Time.DeltaTime;
             targetPositions.Update(ref state);
 
-             var job = new RangedWeaponSetMovePositionJob
+            var job = new RangedWeaponSetMovePositionJob
             {
                 targetPositions = targetPositions,
 
             };
-            var setpositionHandle = job.ScheduleParallel(state.Dependency);
+            var setpositionHandle = job.Schedule(state.Dependency);
+
+            var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
 
             var moveJob = new RangedWeaponMoveToTargetJob
             {
                 DeltaTime = deltaTime,
+                ecb = ecb,
             };
 
-            var moveHandle = moveJob.ScheduleParallel(setpositionHandle);
+            var moveHandle = moveJob.Schedule(setpositionHandle);
 
             state.Dependency = moveHandle;
         }
@@ -93,6 +131,8 @@ namespace Sample1
     public partial struct RangedWeaponMoveToTargetJob : IJobEntity
     {
         [ReadOnly] public float DeltaTime;
+        public EntityCommandBuffer ecb;
+
         [BurstCompile]
         void Execute(ref RangedWeaponUnitAspect value)
         {
@@ -102,6 +142,15 @@ namespace Sample1
             var rangeSq = math.pow(value.Range, 2);
             if (rangeSq < distanceSq)
             {
+                if (rangeSq < math.pow(value.LockOnRange, 2))
+                {
+                    ecb.SetComponentEnabled(value.Self, ComponentType.ReadOnly<LockOnTargetComponentData>(), true);
+                }
+                else if (rangeSq > math.pow(value.LockOffRange, 2))
+                {
+                    ecb.SetComponentEnabled(value.Self, ComponentType.ReadOnly<LockOnTargetComponentData>(), false);
+                }
+
                 value.WorldPosition += (math.normalize(targetPos - value.WorldPosition) * value.Speed * DeltaTime);
             }
         }
