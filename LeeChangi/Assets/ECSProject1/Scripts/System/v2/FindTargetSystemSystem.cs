@@ -10,51 +10,56 @@ namespace Sample1
 {
 
 
-	public class FindTargetSystemSystemAuthoring : IGetBakedSystem
-	{
-		public FindTargetSystemSystemAuthoring(){}
-		public Type GetSystemType()
-		{
-			return typeof(FindTargetSystemSystem);
-		}
-	}
+    public class FindTargetSystemSystemAuthoring : IGetBakedSystem
+    {
+        public FindTargetSystemSystemAuthoring() { }
+        public Type GetSystemType()
+        {
+            return typeof(FindTargetSystemSystem);
+        }
+    }
 
     //[UpdateAfter(typeof(TransformSystemGroup))]
     //[UpdateAfter(typeof(UnitSpawnSystem))]
-	[DisableAutoCreation]
-	[BurstCompile]
-	public partial struct FindTargetSystemSystem : ISystem
+    [DisableAutoCreation]
+    [BurstCompile]
+    public partial struct FindTargetSystemSystem : ISystem
     {
-        EntityQuery unitQuery;
+        EntityQuery totalUnitQuery;
+        EntityQuery targetterUnitQuery;
         ComponentLookup<TeamUnitComponentData> teamIndices;
         ComponentLookup<LocalTransform> unitPositions;
         [BurstCompile]
-		public void OnCreate(ref SystemState state)
-		{
-            using var unitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
-           .WithAll<TeamUnitComponentData>()
-           //.WithNone<EnemyTargetComponentData>()
-           .WithAllRW<LocalToWorld>();
-            unitQuery = state.GetEntityQuery(unitQueryBuilder);
-            state.RequireForUpdate(unitQuery);
+        public void OnCreate(ref SystemState state)
+        {
+            using var totalUnitQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+           .WithAll<TeamUnitComponentData>();
+            using var targetterQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<TeamUnitComponentData>()
+                .WithNone<EnemyTargetComponentData>();
+
+            totalUnitQuery = state.GetEntityQuery(totalUnitQueryBuilder);
+            targetterUnitQuery = state.GetEntityQuery(targetterQueryBuilder);
+
+            state.RequireForUpdate(targetterUnitQuery);
 
             teamIndices = state.GetComponentLookup<TeamUnitComponentData>();
             unitPositions = state.GetComponentLookup<LocalTransform>();
 
         }
 
-		[BurstCompile]
-		public void OnDestroy(ref SystemState state)
-		{
-		}
+        [BurstCompile]
+        public void OnDestroy(ref SystemState state)
+        {
+        }
 
-		[BurstCompile]
-		public void OnUpdate(ref SystemState state)
-		{
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
+        {
             unitPositions.Update(ref state);
             teamIndices.Update(ref state);
-             var unitIds = unitQuery.ToEntityArray(Allocator.TempJob);
-            
+
+            var totalUnitIds = totalUnitQuery.ToEntityArray(Allocator.TempJob);
 
             var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
             var world = state.WorldUnmanaged;
@@ -62,16 +67,16 @@ namespace Sample1
             var job = new TargetingEnemyUnitJob
             {
                 teamIndices = teamIndices,
-                unitIds = unitIds,
+                unitIds = totalUnitIds,
                 unitPositions = unitPositions,
                 ecb = ecb,
             };
 
-            job.Schedule();
+            job.Schedule(targetterUnitQuery);
 
             //unitIds.Dispose();
         }
-	}
+    }
 
 
     public readonly partial struct TeamUnitAspect : IAspect
@@ -104,7 +109,7 @@ namespace Sample1
         [ReadOnly] public NativeArray<Entity> unitIds;
         public EntityCommandBuffer ecb;
 
-        //[BurstCompile]
+        [BurstCompile]
         void Execute(in TeamUnitAspect value)
         {
             var target = Entity.Null;
@@ -114,11 +119,23 @@ namespace Sample1
             for (var i = 0; i < unitIds.Length; i++)
             {
                 var entity = unitIds[i];
+
+                if (!teamIndices.HasComponent(entity))
+                {
+                    continue;
+                }
+
                 var other = teamIndices[entity];
                 if (other.TeamIndex == value.TeamIndex)
                 {
                     continue;
                 }
+
+                if (!unitPositions.HasComponent(entity))
+                {
+                    continue;
+                }
+
                 var entityPos = unitPositions[entity];
 
                 var nextSq = math.distancesq(value.WorldPosition, entityPos.Position);

@@ -30,6 +30,9 @@ namespace Sample1
                 AddComponent(entity, new MovableUnitComponentData {moveSpeed = authoring.Speed });
                 AddComponent(entity, new BodyStat { HP = authoring.HP, Armor = 0 });
                 AddComponent(entity, new LockOnTargetComponentData { });
+
+                SetComponentEnabled<EnemyTargetComponentData>(entity, false);
+                SetComponentEnabled<LockOnTargetComponentData>(entity, false);
             }
         }
     }
