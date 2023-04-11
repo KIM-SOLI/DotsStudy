@@ -20,6 +20,7 @@ namespace Sample1
     }
 
 
+    [UpdateAfter(typeof(RangedWeponMoveSystem))]
     [DisableAutoCreation]
     [BurstCompile]
     public partial struct RangedWeaponAttackSystem : ISystem
@@ -36,11 +37,14 @@ namespace Sample1
                 .WithAll<EnemyTargetComponentData>()
                 .WithAll<LockOnTargetComponentData>();
 
+
             unitQuery = state.GetEntityQuery(unitQueryBuilder);
-            state.RequireForUpdate(unitQuery);
+
 
             lookupTargetEnemy = state.GetComponentLookup<EnemyTargetComponentData>(true);
             lookupBodies = state.GetComponentLookup<BodyStat>();
+
+            state.RequireForUpdate(unitQuery);
         }
 
         [BurstCompile]
@@ -61,12 +65,12 @@ namespace Sample1
             var job = new CollectLockOnTargetJob
             {
                 entities = unitIds,
-                loockupBodies = lookupBodies,
+                lookupBodies = lookupBodies,
                 lookupEnemyTarget = lookupTargetEnemy,
                 targetBodies = targetbodies
             };
-            var handle = job.Schedule(unitIds.Length,4);
-            
+            job.Schedule(unitQuery);
+
             //unitIds.Dispose();
             targetbodies.Dispose();
         }
@@ -95,20 +99,34 @@ namespace Sample1
 
 
     [BurstCompile]
-    public partial struct CollectLockOnTargetJob : IJobParallelFor
+    public partial struct CollectLockOnTargetJob : IJobEntity
     {
-        [ReadOnly] public ComponentLookup<BodyStat> loockupBodies;
+        [ReadOnly] public ComponentLookup<BodyStat> lookupBodies;
         [ReadOnly] public ComponentLookup<EnemyTargetComponentData> lookupEnemyTarget;
         [ReadOnly] public NativeArray<Entity> entities;
 
         [NativeDisableParallelForRestriction] public NativeArray<BodyStat> targetBodies;
 
         [BurstCompile]
-        public void Execute(int index)
+        public void Execute(in RangedWeaponAttackAspect value)
         {
-            var entity = entities[index];
-            var target = lookupEnemyTarget[entity].target;
-            targetBodies[index] = loockupBodies[target];
+            if (value.targetEntity != Entity.Null)
+            {
+
+                if (lookupBodies.HasComponent(value.targetEntity))
+                {
+                    var copyComp = lookupBodies[value.targetEntity];
+                    copyComp.HP -= 1;
+                    lookupBodies[value.targetEntity] = copyComp;
+                }
+            }
+
+            //for (var i = 0; i < entities.Length; i++)
+            //{
+            //    var entity = entities[i];
+            //    var target = lookupEnemyTarget[entity].target;
+            //    targetBodies[i] = lookupBodies[target];
+            //}
         }
     }
 
