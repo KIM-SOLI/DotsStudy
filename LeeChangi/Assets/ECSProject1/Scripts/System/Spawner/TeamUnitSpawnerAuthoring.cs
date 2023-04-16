@@ -126,10 +126,10 @@ public partial struct TeamUnitSpawnerSystem : ISystem
                     Rotation = quaternion.identity,
                     Scale = 1,
                 });
-                ecb.SetComponent(crateUnits[j], new URPMaterialPropertyBaseColor
-                {
-                    Value = (Vector4)unit.color,
-                });
+                //ecb.SetComponent(crateUnits[j], new URPMaterialPropertyBaseColor
+                //{
+                //    Value = (Vector4)unit.color,
+                //});
                 ecb.SetComponent(crateUnits[j], new TeamUnitComponentData
                 {
                     TeamIndex = unit.TeamIndex,

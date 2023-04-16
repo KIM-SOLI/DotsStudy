@@ -36,6 +36,7 @@ namespace Sample1
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
+           
         }
 
         [BurstCompile]

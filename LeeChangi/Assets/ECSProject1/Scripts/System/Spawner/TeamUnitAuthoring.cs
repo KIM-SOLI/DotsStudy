@@ -71,16 +71,20 @@ namespace Sample1
     public struct LockOnTargetComponentData : IComponentData, IEnableableComponent
     {}
 
-
-
-    public readonly partial struct TargetingEnemyUnitAspect : IAspect
+    public struct TestComponent : IComponentData
     {
-        readonly RefRO<LocalToWorld> transform;
-        public readonly Entity self;
-        readonly RefRO<TeamUnitComponentData> teamUnit;
-
-        public float3 WorldPosition => transform.ValueRO.Position;
-        public int TeamIndex => teamUnit.ValueRO.TeamIndex;
+        public int i;
     }
+
+
+    //public readonly partial struct TargetingEnemyUnitAspect : IAspect
+    //{
+    //    readonly RefRO<LocalToWorld> transform;
+    //    public readonly Entity self;
+    //    readonly RefRO<TeamUnitComponentData> teamUnit;
+
+    //    public float3 WorldPosition => transform.ValueRO.Position;
+    //    public int TeamIndex => teamUnit.ValueRO.TeamIndex;
+    //}
 
 }

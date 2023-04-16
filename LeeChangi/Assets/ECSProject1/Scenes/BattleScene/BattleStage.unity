@@ -67,9 +67,6 @@ LightmapSettings:
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
     m_TextureCompression: 1
-    m_FinalGather: 0
-    m_FinalGatherFiltering: 1
-    m_FinalGatherRayCount: 256
     m_ReflectionCompression: 2
     m_MixedBakeMode: 2
     m_BakeBackend: 1
@@ -244,7 +241,7 @@ MonoBehaviour:
       y: 0
       z: 9.45
     Speed: 1
-  prefab: {fileID: 4569911970032586867, guid: df57d75d841d78c44b385e4955795c33, type: 3}
+  prefab: {fileID: 6494988742457104661, guid: f02f66576359957428c969df8a04a357, type: 3}
   parent: {fileID: 525353728}
 --- !u!1 &525353728
 GameObject:
