@@ -17,13 +17,12 @@ public partial struct ChaserSystem : ISystem
     {
     }
 
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        var delta = SystemAPI.Time.DeltaTime;
         var playerEntity = SystemAPI.GetSingletonEntity<PlayerTag>();
         if (playerEntity != null)
         {
-            var delta = SystemAPI.Time.DeltaTime;
             Vector3 playerPosition = SystemAPI.GetComponent<WorldTransform>(playerEntity).Position;
 
             var chaseJob = new ChaserJob
@@ -34,14 +33,6 @@ public partial struct ChaserSystem : ISystem
             };
             chaseJob.ScheduleParallel();
         }
-
-        //var entityQueryBuilder = new EntityQueryBuilder(Allocator.TempJob).WithAll<WorldTransform>().WithAll<ChaserTag>();
-        //var entityQuery = state.GetEntityQuery(entityQueryBuilder);
-        //state.RequireForUpdate(entityQuery);
-
-        //var nativeArray =
-        //    CollectionHelper.CreateNativeArray<WorldTransform>(entityQuery.CalculateEntityCount(), Allocator.TempJob);
-
     }
 }
 
@@ -69,20 +60,4 @@ public partial struct ChaserJob : IJobEntity
     }
 }
 
-public partial struct CircleCollisionJob : IJobEntity
-{
-    [ReadOnly] public float boundary;
-    [ReadOnly] public float deltaTime;
-    [ReadOnly] public NativeArray<float3> otherPositions;
 
-    void Execute(ref TransformAspect transform, in ChaserTag tag)
-    {
-        foreach (var position in otherPositions)
-        {
-            if (math.distancesq(transform.LocalPosition, position) <= boundary)
-            {
-                var dir = VectorExtension.NormalizedDirAB(transform.LocalPosition, position);
-            }
-        }
-    }
-}
