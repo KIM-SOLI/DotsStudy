@@ -17,6 +17,7 @@ public partial struct ChaserSystem : ISystem
     {
     }
 
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         var delta = SystemAPI.Time.DeltaTime;

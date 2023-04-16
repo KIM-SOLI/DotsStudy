@@ -31,8 +31,7 @@ public partial struct CircleCollisionSystem : ISystem
         NativeArray<float3> positionList = new NativeArray<float3>(entityArray.Length, Allocator.TempJob);
         for (int i = 0; i < entityArray.Length; i++)
         {
-            var entity = entityArray[i];
-            positionList[i] = entityManager.GetComponentData<LocalTransform>(entity).Position;
+            positionList[i] = entityManager.GetComponentData<LocalTransform>(entityArray[i]).Position;
         }
 
         var delta = SystemAPI.Time.DeltaTime;
