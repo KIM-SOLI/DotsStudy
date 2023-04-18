@@ -21,13 +21,14 @@ namespace Sample1
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent(entity, new TeamUnitComponentData { });
-                AddComponent(entity ,new EnemyTargetComponentData { });
-                AddComponent(entity ,new RangedWeaponComponentData {
-                    SafeDistance = authoring.Range,
-                    LockOffRange = authoring.LockOffRange,
-                    LockOnRange = authoring.LockOnRange,
+                AddComponent(entity, new EnemyTargetComponentData { });
+                AddComponent(entity, new RangedWeaponComponentData
+                {
+                    RangeDistanceSq = math.pow(authoring.Range, 2),
+                    MaximumDistanceSq = math.pow(authoring.LockOffRange, 2),
+                    MinimumDistanceSq = math.pow(authoring.LockOnRange, 2),
                 });
-                AddComponent(entity, new MovableUnitComponentData {moveSpeed = authoring.Speed });
+                AddComponent(entity, new MovableUnitComponentData { moveSpeed = authoring.Speed });
                 AddComponent(entity, new BodyStat { HP = authoring.HP, Armor = 0 });
                 AddComponent(entity, new LockOnTargetComponentData { });
 
@@ -45,10 +46,10 @@ namespace Sample1
 
     public struct RangedWeaponComponentData : IComponentData
     {
-        public float SafeDistance;
+        public float RangeDistanceSq;
 
-        public float LockOnRange;
-        public float LockOffRange;
+        public float MinimumDistanceSq;
+        public float MaximumDistanceSq;
     }
 
     public struct MovableUnitComponentData : IComponentData
@@ -69,7 +70,7 @@ namespace Sample1
     }
 
     public struct LockOnTargetComponentData : IComponentData, IEnableableComponent
-    {}
+    { }
 
     public struct TestComponent : IComponentData
     {

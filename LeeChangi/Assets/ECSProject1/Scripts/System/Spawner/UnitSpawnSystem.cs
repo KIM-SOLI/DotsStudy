@@ -1,6 +1,7 @@
 ﻿using PlasticGui;
 using System;
 using Unity.Burst;
+using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -59,6 +60,7 @@ namespace Sample1
                 ecb.Instantiate(spawnSet.baseEntity, crateUnits);
                 for (var j = 0; j < unit.Count; j++)
                 {
+                    //ecb.AddComponent<PostTransformMatrix>(crateUnits[j]);
                     ecb.SetComponent(crateUnits[j], new LocalTransform
                     {
                         Position = unit.position + new float3(random.NextFloat(-2, 2), 0, random.NextFloat(-2, 2)),
@@ -79,5 +81,31 @@ namespace Sample1
             state.Enabled = false;
         }
     }
+
+
+
+    //[BurstCompile]
+    //public partial struct SampleJob : IJobChunk
+    //{
+    //    public EntityTypeHandle entityHandle;
+    //    public EntityCommandBuffer.ParallelWriter writer;
+
+    //    [BurstCompile]
+    //    public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+    //    {
+    //        NativeArray<Entity> entities =
+    //               chunk.GetNativeArray(entityHandle);
+           
+    //        var enumerator = new ChunkEntityEnumerator(
+    //            useEnabledMask,
+    //            chunkEnabledMask,
+    //            chunk.Count);
+
+    //        while (enumerator.NextEntityIndex(out var index))
+    //        {
+    //            var entity = entities[index];
+    //        }
+    //    }
+    //}
 
 }

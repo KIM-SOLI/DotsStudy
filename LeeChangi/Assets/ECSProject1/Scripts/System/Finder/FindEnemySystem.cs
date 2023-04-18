@@ -138,8 +138,6 @@ namespace Sample1
 
                 if (minEntity != Entity.Null)
                 {
-
-
                     writer.SetComponentEnabled<EnemyTargetComponentData>(unfilteredChunkIndex, entity, true);
                     writer.SetComponent(unfilteredChunkIndex, entity, new EnemyTargetComponentData
                     {

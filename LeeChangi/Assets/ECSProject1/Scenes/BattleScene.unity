@@ -430,3 +430,4 @@ MonoBehaviour:
   initializedSystems:
   - _classRef: Sample1.UnitSpawnSystemAuthoring, ECSPrj1
   - _classRef: Sample1.FindEnemySystemAuthoring, ECSPrj1
+  - _classRef: Sample1.FollowTargetSystemAuthoring, ECSPrj1
