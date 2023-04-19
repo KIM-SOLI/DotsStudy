@@ -3,7 +3,8 @@ using Unity.Transforms;
 using Unity.Burst;
 using Unity.Mathematics;
 using static UnityEngine.Rendering.DebugUI;
-
+using UnityEngine;
+using UnityEditor.Graphs;
 
 namespace Sample1
 {
@@ -15,6 +16,8 @@ namespace Sample1
         public float LockOffRange = 2f;
         public float Speed = 1f;
         public float HP = 100;
+
+        public GameObject hpStateObject;
         public class TeamUnitBaker : Baker<TeamUnitAuthoring>
         {
             public override void Bake(TeamUnitAuthoring authoring)
@@ -29,11 +32,18 @@ namespace Sample1
                     MinimumDistanceSq = math.pow(authoring.LockOnRange, 2),
                 });
                 AddComponent(entity, new MovableUnitComponentData { moveSpeed = authoring.Speed });
-                AddComponent(entity, new BodyStat { HP = authoring.HP, Armor = 0 });
+
+                AddComponent(entity, new BodyStat { 
+                    HP = authoring.HP, 
+                    Armor = 0,
+                    hpStateEntity = GetEntity(authoring.hpStateObject, TransformUsageFlags.Dynamic),
+                });
                 AddComponent(entity, new LockOnTargetComponentData { });
 
                 SetComponentEnabled<EnemyTargetComponentData>(entity, false);
                 SetComponentEnabled<LockOnTargetComponentData>(entity, false);
+
+                
             }
         }
     }
@@ -67,6 +77,8 @@ namespace Sample1
     {
         public float HP;
         public float Armor;
+
+        public Entity hpStateEntity;
     }
 
     public struct LockOnTargetComponentData : IComponentData, IEnableableComponent
@@ -77,6 +89,10 @@ namespace Sample1
         public int i;
     }
 
+    public struct HPBar : IComponentData
+    {
+        public float HP;
+    }
 
     //public readonly partial struct TargetingEnemyUnitAspect : IAspect
     //{
