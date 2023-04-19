@@ -1,11 +1,16 @@
 using MathExtension;
+using System;
+using System.Linq;
 using Unity.Burst;
+using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.UIElements;
+using static UnityEngine.EventSystems.EventTrigger;
 
 [BurstCompile]
 public partial struct CircleCollisionSystem_temp : ISystem
@@ -30,42 +35,64 @@ public partial struct CircleCollisionSystem_temp : ISystem
 	public void OnUpdate(ref SystemState state)
 	{
 		var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
-		//var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
-		var chaserEntity = chaserQuery.ToEntityArray(Allocator.TempJob);
+		var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
 		var job = new CircleCollisionJob_temp
 		{
 			boundary = 1.5f,
-			entities = chaserEntity,
-			otherPositions = state.GetComponentLookup<LocalTransform>(true),
+			localTransformType = state.GetComponentTypeHandle<LocalTransform>(true),
+
+			ecb = ecb.AsParallelWriter(),
+			entityhandle = state.GetEntityTypeHandle(),
 		};
 
 		state.Dependency = job.ScheduleParallel(chaserQuery, state.Dependency);
 	}
 }
 
-public partial struct CircleCollisionJob_temp : IJobEntity
+public partial struct CircleCollisionJob_temp : IJobChunk
 {
 	[ReadOnly] public float boundary;
 	[ReadOnly] public float deltaTime;
 
-	[ReadOnly] public NativeArray<Entity> entities;
-	[ReadOnly] public ComponentLookup<LocalTransform> otherPositions;
+	[ReadOnly] public EntityTypeHandle entityhandle;
+	[ReadOnly] public ComponentTypeHandle<LocalTransform> localTransformType;
 
-	void Execute(ref LocalTransform transform, in ChaserTag tag)
+	public EntityCommandBuffer.ParallelWriter ecb;
+
+	public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
 	{
-		foreach (var entity in entities)
+		var entities = chunk.GetNativeArray(entityhandle);
+		var transforms = chunk.GetNativeArray(ref localTransformType);
+
+		for (int i = 0; i < entities.Length; i++)
 		{
-			var position = otherPositions[entity].Position;
+			var entity = entities[i];
+			var transform = transforms[i];
 
-			if (!transform.Position.Equals(position)) // 본인을 제외
+			for (int j = 0; j < entities.Length; j++)
 			{
-				if (math.distancesq(transform.Position, position) <= boundary)
-				{
-					//Debug.Log("CircleCollision");
-					var dir = VectorExtension.NormalizedDirAB(transform.Position, position);
+				if (i == j) // 본인을 제외
+					continue;
 
-					transform.Position += -dir * boundary;
+				var otherTransform = transforms[j];
+				var position = otherTransform.Position;
+
+				float distance = math.distancesq(transform.Position, position);
+				if (distance <= boundary)
+				{
+					// Calculate the push direction based on the current positions
+					float3 pushDirection = math.normalize(transform.Position - position);
+
+					// Calculate the push distance based on the boundary and current distance
+					float pushDistance = (boundary - distance) * 0.5f;
+
+					ecb.SetComponent<LocalTransform>(unfilteredChunkIndex, entity, new LocalTransform
+					{
+						Position = transform.Position + pushDirection * pushDistance,
+						Rotation = transform.Rotation,
+						Scale = transform.Scale,
+					});
 				}
 			}
 		}

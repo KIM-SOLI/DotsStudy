@@ -1,4 +1,4 @@
-using MathExtension;
+/*using MathExtension;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -35,7 +35,7 @@ public partial struct CircleCollisionSystem : ISystem
 		}
 
 		var delta = SystemAPI.Time.DeltaTime;
-		/*        var collisionJob = new CircleCollisionJob
+		*//*        var collisionJob = new CircleCollisionJob
 				{
 					boundary = 1.5f,
 					deltaTime = delta,
@@ -43,7 +43,7 @@ public partial struct CircleCollisionSystem : ISystem
 				};
 
 				JobHandle jobHandle = collisionJob.ScheduleParallel(chaserQuery, default);
-				jobHandle.Complete();*/
+				jobHandle.Complete();*//*
 
 		entityArray.Dispose();
 		positionList.Dispose();
@@ -73,3 +73,4 @@ public partial struct CircleCollisionJob : IJobEntity
 		}
 	}
 }
+*/
