@@ -1,4 +1,5 @@
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -10,7 +11,7 @@ using static UnityEditor.PlayerSettings;
 partial class FindMouseToTargetSystem : SystemBase
 {
     private Camera mainCamera;
-
+    private EntityManager entityManager;
     Vector3 randomDir;
 
     [BurstCompile]
@@ -20,6 +21,8 @@ partial class FindMouseToTargetSystem : SystemBase
         mainCamera = Camera.main;
 
         randomDir = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0f, UnityEngine.Random.Range(-1f, 1f)).normalized;
+
+        entityManager = World.EntityManager;
     }
 
     [BurstCompile]
@@ -49,7 +52,37 @@ partial class FindMouseToTargetSystem : SystemBase
             }
             moveComp.moveSpeed = 5f;
         }).Run();
-        
+
+
+        Entities.WithAll<AttackToTarget, MySoldierTag>().ForEach((Entity entity, ref AttackToTarget attackComp) =>
+        {
+            var soldierEntityLocalTransform = entityManager.GetComponentData<LocalTransform>(entity);
+            float3 soldierPosition = soldierEntityLocalTransform.Position;
+            float minDist = 100000000f;
+            float3 closestEnemyPosition = float3.zero;
+
+            // 적을 순회하며 가장 가까운 적을 찾
+            var enemyQuery = entityManager.CreateEntityQuery(typeof(EnemyTag));
+            var entityArray = enemyQuery.ToEntityArray(Allocator.TempJob);
+            Entity tempEntity = Entity.Null;
+            foreach (var enemyEntity in entityArray)
+            {
+                var localTransform = entityManager.GetComponentData<LocalTransform>(enemyEntity);
+                var enemyPosition = localTransform.Position;
+                float dist = math.distance(soldierPosition, enemyPosition);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    closestEnemyPosition = enemyPosition;
+                    tempEntity = enemyEntity;
+                }
+            }
+            entityArray.Dispose();
+            attackComp.targetEntity = tempEntity;
+            attackComp.targetPosition = closestEnemyPosition;
+        }).WithoutBurst().Run();
+
+
 
         Entities.WithAll<MoveToTarget, EnemyTag>().ForEach((Entity entity, ref MoveToTarget moveComp,ref EnemyTag enemy) =>
         {

@@ -1,7 +1,9 @@
 using System;
 using System.Net;
+using TMPro;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -45,27 +47,10 @@ partial struct SoliderAttackSystem : ISystem
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-        float3 targetPosition = new float3(123456789, 123456789, 123456789);
-        var entityArray = enemyQuery.ToEntityArray(Allocator.TempJob);
-        var entityManager = state.World.EntityManager;
-
-        float minDist = 100000000f;
-        foreach (var entity in entityArray)
-        {
-            var position = entityManager.GetComponentData<LocalTransform>(entity).Position;
-            float dist = math.distancesq(targetPosition, position);
-            if(dist < minDist)
-            {
-                minDist = dist;
-                targetPosition = position;
-            }
-        }
-        entityArray.Dispose();
         new SoldierAttackJob
         {
             dt = dt,
             ecb = ecb,
-            targetPosition = targetPosition
         }.ScheduleParallel();
 
         //var tankTransform = SystemAPI.GetComponent<LocalToWorld>();
@@ -76,15 +61,18 @@ partial struct SoliderAttackSystem : ISystem
     {
         public float dt;
         public EntityCommandBuffer.ParallelWriter ecb;
-        public float3 targetPosition;
-        [BurstCompile]
-        private void Execute(SoldierAspect soldier)
-        {
-          
 
-            if (soldier.IsInTargetRange(targetPosition,5))
+        // 추가: soldier 엔티티
+        public Entity soldierEntity;
+
+        [BurstCompile]
+        public void Execute(ref SoldierAspect soldier)
+        {
+            // 가장 가까운 적이 사정거리 안에 있다면 공격
+            if (soldier.IsInTargetRange(2))
             {
-                Debug.Log("AAA");
+                Debug.Log("Soldier is attacking closest enemy!");
+                soldier.KillEnemy(soldier.GetAttackTargetEntity());
             }
         }
     }

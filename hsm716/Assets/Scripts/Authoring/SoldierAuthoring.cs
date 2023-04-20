@@ -12,10 +12,12 @@ class SoldierAuthoring : UnityEngine.MonoBehaviour
     {
         public override void Bake(SoldierAuthoring authoring)
         {
+            AddComponent(new AttackToTarget());
             AddComponent(new MoveToTarget());
             AddComponent(new Soldier()
             {
             });
+            AddComponent(new LifeStateTag());
         }   
 
     }

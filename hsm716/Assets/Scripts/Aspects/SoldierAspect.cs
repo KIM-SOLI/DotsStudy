@@ -17,10 +17,16 @@ public readonly partial struct SoldierAspect : IAspect
     public readonly Entity Entity;
     public readonly RefRO<Soldier> m_Soldier;
     readonly RefRO<MoveToTarget> targetComponent;
+    public readonly RefRO<AttackToTarget> attackTargetComponent;
+    readonly RefRW<LifeStateTag> lifeStateComponent;
     readonly RefRO<MySoldierTag> enemyTagComponent;
     private readonly TransformAspect transform;
 
-
+    public int LifeState
+    {
+        get => lifeStateComponent.ValueRO.state;
+        set => lifeStateComponent.ValueRW.state = value;
+    }
     public void Move(float deltaTime) 
     {
 
@@ -40,10 +46,29 @@ public readonly partial struct SoldierAspect : IAspect
         transform.LookAt(targetPosition);
     }
 
-    public bool IsInTargetRange(float3 targetPosition, float range)
+    public bool IsInTargetRange(float range)
     {
-        return math.distancesq(targetPosition, transform.LocalTransform.Position) <= range - 1;
+        return math.distancesq(attackTargetComponent.ValueRO.targetPosition, transform.LocalTransform.Position) <= range - 1;
+    }
+    public void KillEnemy(Entity targetEntity)
+    {
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        entityManager.SetComponentData<LifeStateTag>(targetEntity, new LifeStateTag() { state = 1 });
     }
 
+    public void TestFunction()
+    {
+        transform.LocalPosition = new float3(transform.LocalPosition.x, -15f, transform.LocalPosition.z);
+    }
+
+    public float3 GetLocalPosition()
+    {
+        return transform.LocalPosition;
+    }
+
+    public Entity GetAttackTargetEntity()
+    {
+        return attackTargetComponent.ValueRO.targetEntity;
+    }
 
 }
