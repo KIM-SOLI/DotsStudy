@@ -8,6 +8,7 @@ using Unity.Transforms;
 using UnityEngine;
 
 [BurstCompile]
+[UpdateAfter(typeof(TransformSystemGroup))]
 public partial struct CircleCollisionSystem : ISystem
 {
 	EntityQuery chaserQuery;
@@ -48,7 +49,6 @@ public partial struct CircleCollisionSystem : ISystem
 		};
 
 		state.Dependency = job.ScheduleParallel(chaserQuery, state.Dependency);
-
 	}
 }
 
