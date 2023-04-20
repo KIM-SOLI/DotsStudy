@@ -17,6 +17,8 @@ public partial struct UnitSpawnSystem : ISystem
 	private int spawnCount;
 	private int spawnLimit;
 
+	private EntityQuery spawnQuery;
+
 	[BurstDiscard]
 	public void OnCreate(ref SystemState state)
 	{
@@ -25,6 +27,11 @@ public partial struct UnitSpawnSystem : ISystem
 		currentTime = 0.0f;
 		intervalTime = 0.01f;
 		clickedPosition = new NativeArray<Vector3>(1, Allocator.Persistent);
+
+		var spawnQueryBuilder = new EntityQueryBuilder(Allocator.TempJob).WithAll<SpawnComponent>();
+		spawnQuery = state.GetEntityQuery(spawnQueryBuilder);
+		state.RequireForUpdate(spawnQuery);
+
 
 		InputSystem.inputActionMap.Disable();
 
@@ -50,7 +57,7 @@ public partial struct UnitSpawnSystem : ISystem
 		clickedPosition.Dispose();
 	}
 
-	//[BurstCompile]
+	[BurstCompile]
 	public void OnUpdate(ref SystemState state)
 	{
 		if (spawnCount < spawnLimit)
@@ -58,19 +65,17 @@ public partial struct UnitSpawnSystem : ISystem
 			currentTime += SystemAPI.Time.DeltaTime;
 			if (currentTime > intervalTime)
 			{
-				var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+				var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+				var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
-				var spawnQuery = entityManager.CreateEntityQuery(typeof(SpawnComponent));
 				var setting = spawnQuery.GetSingleton<SpawnComponent>();
-				var entity = entityManager.Instantiate(setting.unitPrefab);
+				var entity = ecb.Instantiate(setting.unitPrefab);
 
-				entityManager.AddComponent<ChaserTag>(entity);
-				entityManager.SetComponentData(entity, new LocalTransform { Position = float3.zero, Scale = 0.8f });
+				ecb.AddComponent<ChaserTag>(entity);
+				ecb.SetComponent(entity, new LocalTransform { Position = float3.zero, Scale = 0.8f });
 
 				currentTime = 0.0f;
 				spawnCount++;
-
-				Debug.Log("Spawn Count: " + spawnCount.ToString());
 			}
 		}
 	}
