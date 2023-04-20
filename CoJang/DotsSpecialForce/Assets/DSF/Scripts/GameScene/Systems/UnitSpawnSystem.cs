@@ -22,7 +22,7 @@ public partial struct UnitSpawnSystem : ISystem
 	[BurstDiscard]
 	public void OnCreate(ref SystemState state)
 	{
-		spawnLimit = 200;
+		spawnLimit = 500;
 		spawnCount = 0;
 		currentTime = 0.0f;
 		intervalTime = 0.01f;
