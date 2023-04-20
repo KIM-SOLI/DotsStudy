@@ -10,59 +10,88 @@ using Unity.Collections;
 [BurstCompile]
 public partial struct UnitSpawnSystem : ISystem
 {
-    private NativeArray<Vector3> clickedPosition;
+	private NativeArray<Vector3> clickedPosition;
+	private float intervalTime;
+	private float currentTime;
 
-    [BurstDiscard]
-    public void OnCreate(ref SystemState state)
-    {
-        clickedPosition = new NativeArray<Vector3>(1, Allocator.Persistent);
+	private int spawnCount;
+	private int spawnLimit;
 
-        InputSystem.inputActionMap.Disable();
+	[BurstDiscard]
+	public void OnCreate(ref SystemState state)
+	{
+		spawnLimit = 200;
+		spawnCount = 0;
+		currentTime = 0.0f;
+		intervalTime = 0.01f;
+		clickedPosition = new NativeArray<Vector3>(1, Allocator.Persistent);
 
-        var action = InputSystem.inputActionMap.AddAction("CtrlClick");
-        action.AddCompositeBinding("OneModifier").
-            With("Binding", "<Mouse>/leftButton").
-            With("Modifier", "<KeyBoard>/leftCtrl");
+		InputSystem.inputActionMap.Disable();
 
-        action.performed += OnCtrlClick;
+		var action = InputSystem.inputActionMap.AddAction("CtrlClick");
+		action.AddCompositeBinding("OneModifier").
+			With("Binding", "<Mouse>/leftButton").
+			With("Modifier", "<KeyBoard>/leftCtrl");
 
-        InputSystem.inputActionMap.Enable();
-    }
+		action.performed += OnCtrlClick;
 
-    [BurstDiscard]
-    public void OnDestroy(ref SystemState state)
-    {
-        var action = InputSystem.inputActionMap.FindAction("CtrlClick");
-        if (action != null)
-        {
-            action.performed -= OnCtrlClick;
-        }
+		InputSystem.inputActionMap.Enable();
+	}
 
-        clickedPosition.Dispose();
-    }
+	[BurstDiscard]
+	public void OnDestroy(ref SystemState state)
+	{
+		var action = InputSystem.inputActionMap.FindAction("CtrlClick");
+		if (action != null)
+		{
+			action.performed -= OnCtrlClick;
+		}
 
-    [BurstCompile]
-    public void OnUpdate(ref SystemState state)
-    {
-    }
+		clickedPosition.Dispose();
+	}
 
-    [BurstDiscard]
-    private void OnCtrlClick(InputAction.CallbackContext context)
-    {
-        Debug.Log("Control + Left-Click");
+	//[BurstCompile]
+	public void OnUpdate(ref SystemState state)
+	{
+		if (spawnCount < spawnLimit)
+		{
+			currentTime += SystemAPI.Time.DeltaTime;
+			if (currentTime > intervalTime)
+			{
+				var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-        if (Raycaster.ShootRay())
-        {
-            clickedPosition[0] = Raycaster.Hit.point.Vector3_XNZ();
+				var spawnQuery = entityManager.CreateEntityQuery(typeof(SpawnComponent));
+				var setting = spawnQuery.GetSingleton<SpawnComponent>();
+				var entity = entityManager.Instantiate(setting.unitPrefab);
 
-            var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+				entityManager.AddComponent<ChaserTag>(entity);
+				entityManager.SetComponentData(entity, new LocalTransform { Position = float3.zero, Scale = 0.8f });
 
-            var spawnQuery = entityManager.CreateEntityQuery(typeof(SpawnComponent));
-            var setting = spawnQuery.GetSingleton<SpawnComponent>();
-            var entity = entityManager.Instantiate(setting.unitPrefab);
+				currentTime = 0.0f;
+				spawnCount++;
 
-            entityManager.SetComponentData(entity, new LocalTransform { Position = clickedPosition[0], Scale = 1.5f });
-            entityManager.AddComponent<ChaserTag>(entity);
-        }
-    }
+				Debug.Log("Spawn Count: " + spawnCount.ToString());
+			}
+		}
+	}
+
+	[BurstDiscard]
+	private void OnCtrlClick(InputAction.CallbackContext context)
+	{
+		Debug.Log("Control + Left-Click");
+
+		if (Raycaster.ShootRay())
+		{
+			clickedPosition[0] = Raycaster.Hit.point.Vector3_XNZ();
+
+			var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+
+			var spawnQuery = entityManager.CreateEntityQuery(typeof(SpawnComponent));
+			var setting = spawnQuery.GetSingleton<SpawnComponent>();
+			var entity = entityManager.Instantiate(setting.unitPrefab);
+
+			entityManager.SetComponentData(entity, new LocalTransform { Position = clickedPosition[0], Scale = 1.5f });
+			entityManager.AddComponent<ChaserTag>(entity);
+		}
+	}
 }
