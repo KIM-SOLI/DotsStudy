@@ -75,14 +75,14 @@ public partial struct PlayerMoveJob : IJobChunk
     public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
     {
         var entities = chunk.GetNativeArray(entityHandle);
-        var localToWorlds = chunk.GetNativeArray(myPositions);
+        var localTransforms = chunk.GetNativeArray(myPositions);
         var characters = chunk.GetNativeArray(ref characterHandles);
 
         var enumerator = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
         while (enumerator.NextEntityIndex(out var index))
         {
             var entity = entities[index];
-            var localTransform = localToWorlds[index];
+            var localTransform = localTransforms[index];
 
             float3 dir = moveFloat3.normalized;
             localTransform.Position += deltaTime * dir * characters[index].Speed;

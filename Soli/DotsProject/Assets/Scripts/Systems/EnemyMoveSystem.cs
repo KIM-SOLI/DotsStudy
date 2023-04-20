@@ -80,4 +80,3 @@ public partial struct EnemyMoveJob : IJobChunk
         }
     }
 }
-
