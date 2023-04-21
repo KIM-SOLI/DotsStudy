@@ -4,6 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/DSF/Scenes/MainScenes/GameScene.unity
+    guid: f56a1cc656747974e8ff372276042c52
+  - enabled: 1
+    path: Assets/DSF/Scenes/SubScenes/GameScene/GameSubScene_Movement.unity
+    guid: cafce903b4ba4c346a35a3856d708b36
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 4f4b323be64622a40ba480a9d6d1896c, type: 2}
