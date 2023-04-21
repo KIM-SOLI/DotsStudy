@@ -2,13 +2,9 @@ using Unity.Burst;
 using Unity.Entities;
 using UnityEngine;
 using Unity.Collections;
-using UnityEngine.UIElements;
 using Unity.Burst.Intrinsics;
 using Unity.Transforms;
 using Unity.Mathematics;
-using static Unity.Entities.Content.RemoteContentLocation;
-using static UnityEngine.EventSystems.EventTrigger;
-using UnityEngine.SocialPlatforms;
 
 [BurstCompile]
 public partial struct PlayerMoveSystem : ISystem
@@ -86,6 +82,10 @@ public partial struct PlayerMoveJob : IJobChunk
 
             float3 dir = moveFloat3.normalized;
             localTransform.Position += deltaTime * dir * characters[index].Speed;
+
+            Quaternion rot = Quaternion.identity;
+            rot.eulerAngles = new Vector3(0, Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg, 0);
+            localTransform.Rotation = rot;
 
             writer.SetComponent(unfilteredChunkIndex, entity, localTransform);
         }

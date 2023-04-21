@@ -72,9 +72,13 @@ public partial struct EnemyMoveJob : IJobChunk
         {
             var entity = entities[index];
             var localTransform = localToWorlds[index];
+
             Vector3 dir = targetPosition - localTransform.Position;
-            float3 dirFloat3 = dir.normalized;
             localTransform.Position += deltaTime * (float3)dir.normalized * characters[index].Speed;
+
+            Quaternion rot = Quaternion.identity;
+            rot.eulerAngles = new Vector3(0, Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg, 0);
+            localTransform.Rotation = rot;
 
             writer.SetComponent(unfilteredChunkIndex, entity, localTransform);
         }

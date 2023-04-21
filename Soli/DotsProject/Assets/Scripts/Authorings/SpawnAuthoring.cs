@@ -1,10 +1,10 @@
 using Unity.Entities;
-using UnityEngine;
 
 public class SpawnAuthoring : UnityEngine.MonoBehaviour
 {
-    public GameObject enemyPrefab;
+    public UnityEngine.GameObject enemyPrefab;
     public float spawnRate;
+    public int spawnCount;
 
     public class SpawnBaker : Baker<SpawnAuthoring>
     {
@@ -14,7 +14,9 @@ public class SpawnAuthoring : UnityEngine.MonoBehaviour
             {
                 enemyPrefab = GetEntity(authoring.enemyPrefab),
                 spawnRate = authoring.spawnRate,
+                spawnCount = authoring.spawnCount,
             });
+            AddComponent(new EnemyCount { enemyCount = 0 });
         }
     }
 }
@@ -23,4 +25,10 @@ public struct Spawn : IComponentData
 {
     public Entity enemyPrefab;
     public float spawnRate;
+    public int spawnCount;
+}
+
+public struct EnemyCount : IComponentData
+{
+    public int enemyCount;
 }
