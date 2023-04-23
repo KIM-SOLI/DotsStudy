@@ -54,7 +54,7 @@ partial struct SoldierSpawningSystem : ISystem
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
-        var vehicles = CollectionHelper.CreateNativeArray<Entity>(5000, Allocator.Temp);
+        var vehicles = CollectionHelper.CreateNativeArray<Entity>(500, Allocator.Temp);
         ecb.Instantiate(config.TankPrefab, vehicles);
         
         var queryMask = m_BaseColorQuery.GetEntityQueryMask();

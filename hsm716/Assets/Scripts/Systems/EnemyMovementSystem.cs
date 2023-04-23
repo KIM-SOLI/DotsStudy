@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using Unity.Burst;
+using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -11,6 +12,7 @@ using Unity.Rendering;
 using Unity.Transforms;
 using Unity.VisualScripting;
 using UnityEngine;
+using static SoliderMovementSystem;
 using static UnityEngine.GraphicsBuffer;
 
 // Contrarily to ISystem, SystemBase systems are classes.
@@ -24,7 +26,13 @@ partial struct EnemyMovementSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        enemyQuery = state.GetEntityQuery(ComponentType.ReadOnly<EnemyTag>());//SystemAPI.QueryBuilder().WithAll<EnemyTag>().Build();
+        using var enemyQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+       .WithAll<EnemyTag>()
+       .WithAll<Soldier>()
+       .WithAll<MoveToTarget>();
+        //.WithAll<AttackToTarget>()
+        //.WithAll<LifeStateTag>();
+        enemyQuery = state.GetEntityQuery(enemyQueryBuilder);
         state.RequireForUpdate(enemyQuery);
     }
 
@@ -36,28 +44,71 @@ partial struct EnemyMovementSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var dt = SystemAPI.Time.DeltaTime;
-
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-        new EnemyMoveJob
+        var job = new EnemyMoveJob
         {
-            dt = dt,
-            ecb = ecb
-        }.ScheduleParallel();
+            localTransformHandles = state.GetComponentTypeHandle<LocalTransform>(true),
+            m_Soldier = state.GetComponentTypeHandle<Soldier>(true),
+            targetComponents = state.GetComponentTypeHandle<MoveToTarget>(true),
+            lifeStateComponent = state.GetComponentTypeHandle<LifeStateTag>(true),
+            enemyTagComponent = state.GetComponentTypeHandle<EnemyTag>(true),
+            entityHandle = state.GetEntityTypeHandle(),
+            writter = ecb,
+            deltaTime = SystemAPI.Time.DeltaTime,
+        };
+
+        state.Dependency = job.ScheduleParallel(enemyQuery, state.Dependency);
     }
 
     [BurstCompile]
-    public partial struct EnemyMoveJob : IJobEntity
+    public partial struct EnemyMoveJob : IJobChunk
     {
-        public float dt;
-        public EntityCommandBuffer.ParallelWriter ecb;
+        [ReadOnly] public ComponentTypeHandle<LocalTransform> localTransformHandles;
+        [ReadOnly] public ComponentTypeHandle<Soldier> m_Soldier;
+        [ReadOnly] public ComponentTypeHandle<MoveToTarget> targetComponents;
+        [ReadOnly] public ComponentTypeHandle<LifeStateTag> lifeStateComponent;
+        [ReadOnly] public ComponentTypeHandle<EnemyTag> enemyTagComponent;
+        [ReadOnly] public float deltaTime;
 
+        public EntityTypeHandle entityHandle;
+        public EntityCommandBuffer.ParallelWriter writter;
+
+        
         [BurstCompile]
-        private void Execute(EnemyAspect enemy)
+        public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
         {
-            enemy.EnemyMove(dt);
+
+            NativeArray<Entity> entities = chunk.GetNativeArray(entityHandle);
+            var loalTransforms = chunk.GetNativeArray(ref localTransformHandles);
+            NativeArray<MoveToTarget> targetComponentList = chunk.GetNativeArray(ref targetComponents);
+
+            var enumerator = new ChunkEntityEnumerator(
+                useEnabledMask,
+                chunkEnabledMask,
+                chunk.Count);
+
+            while (enumerator.NextEntityIndex(out var index))
+            {
+                var entity = entities[index];
+                var loalTransform = loalTransforms[index];
+                var target = targetComponentList[index];
+
+                // Notice that this is a lambda being passed as parameter to ForEach.
+                float3 targetPosition = target.targetPosition;
+                var localPosition = loalTransform.Position;
+                float3 moveDirection = targetPosition;
+
+                Quaternion lookRotation = Quaternion.LookRotation(targetPosition, math.up());
+
+                loalTransform.Position += targetPosition * deltaTime * target.moveSpeed;
+                //loalTransform.Position = new float3(localPosition.x, 0.01f, localPosition.z);
+                loalTransform.Rotation = lookRotation;
+                writter.SetComponent(unfilteredChunkIndex, entity, loalTransform);
+                //loalTransform.ro LookAt(targetPosition);
+            }
+
         }
     }
 }
