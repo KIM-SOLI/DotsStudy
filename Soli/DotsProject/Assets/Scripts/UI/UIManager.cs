@@ -9,6 +9,10 @@ public class UIManager : MonoBehaviour
     private EntityManager entityManager;
     private Entity sqwanEntity;
 
+    void OnDisable()
+    {
+
+    }
 
     void Start()
     {

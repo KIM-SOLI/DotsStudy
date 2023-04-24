@@ -4,32 +4,37 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
+using static UnityEngine.GraphicsBuffer;
 
-public partial struct EnemySpawnSystem : ISystem
+[RequireMatchingQueriesForUpdate]
+public partial struct BulletSpawnSystem : ISystem
 {
     private EntityQuery query;
     private float timer;
-    private float totalTime; // 시드 랜덤으로 뽑으려고..
 
     private Entity spawn;
     private float spawnRate;
+    private Vector3 spawnPos;
+    private Entity player;
+    private Vector3 playerPos;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        using var playerGetQueryBuilder = new EntityQueryBuilder(Allocator.Temp).WithAll<EnemySpawnTag>();
+        using var playerGetQueryBuilder = new EntityQueryBuilder(Allocator.Temp).WithAll<BulletSpawnTag>();
         query = state.GetEntityQuery(playerGetQueryBuilder);
 
         state.RequireForUpdate(query);
 
         timer = 0;
-        totalTime = 0;
     }
 
     [BurstCompile]
     public void OnDestroy(ref SystemState state)
     {
-        query.Dispose();
+
     }
 
     [BurstCompile]
@@ -37,11 +42,11 @@ public partial struct EnemySpawnSystem : ISystem
     {
         if (spawnRate == 0)
         {
-            spawn = SystemAPI.GetSingletonEntity<EnemySpawnTag>();
+            spawn = SystemAPI.GetSingletonEntity<BulletSpawnTag>();
             spawnRate = SystemAPI.GetComponent<Spawn>(spawn).spawnRate;
+            spawnPos = SystemAPI.GetComponent<LocalTransform>(spawn).Position;
         }
 
-        totalTime += SystemAPI.Time.DeltaTime;
         timer += SystemAPI.Time.DeltaTime;
         if (timer < spawnRate)
         {
@@ -50,74 +55,68 @@ public partial struct EnemySpawnSystem : ISystem
 
         timer = 0f;
 
+        player = SystemAPI.GetSingletonEntity<PlayerTag>();
+        playerPos = SystemAPI.GetComponent<LocalTransform>(player).Position;
+
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
-        var random = Random.CreateFromIndex((uint)totalTime);
-
-        var job = new EnemySpawnJob
+        var job = new BulletSpawnJob
         {
+            LocalToWorldLookup = SystemAPI.GetComponentLookup<LocalToWorld>(true),
+            LocalTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true),
             spawnHandle = state.GetComponentTypeHandle<Spawn>(true),
-            enemyCountHandle = state.GetComponentTypeHandle<EnemyCount>(true),
-            random = random,
+            spawnPosition = spawnPos + playerPos,
+
             entityHandle = state.GetEntityTypeHandle(),
             writer = ecb.AsParallelWriter(),
         };
 
         state.Dependency = job.ScheduleParallel(query, state.Dependency);
-
-        //job.entities.Dispose();
-        //job.spawns.Dispose();
-        //job.enemyCounts.Dispose();
     }
 }
 
-public partial struct EnemySpawnJob : IJobChunk
+public partial struct BulletSpawnJob : IJobChunk
 {
+    [ReadOnly] public ComponentLookup<LocalToWorld> LocalToWorldLookup;
+    [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
     [ReadOnly] public ComponentTypeHandle<Spawn> spawnHandle;
-    [ReadOnly] public ComponentTypeHandle<EnemyCount> enemyCountHandle;
-    [ReadOnly] public Random random;
+
+    [ReadOnly] public float3 spawnPosition;
 
     public EntityTypeHandle entityHandle;
     public EntityCommandBuffer.ParallelWriter writer;
 
-    //public NativeArray<Entity> entities;
     //public NativeArray<Spawn> spawns;
-    //public NativeArray<EnemyCount> enemyCounts;
 
     public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
     {
         var entities = chunk.GetNativeArray(entityHandle);
         var spawns = chunk.GetNativeArray(ref spawnHandle);
-        var enemyCounts = chunk.GetNativeArray(ref enemyCountHandle);
 
         var enumerator = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
         while (enumerator.NextEntityIndex(out var index))
         {
-            var count = enemyCounts[index];
+            var entity = entities[index];
 
             var crateUnits = CollectionHelper.CreateNativeArray<Entity>(spawns[index].spawnCount, Allocator.Temp);
-            writer.Instantiate(index, spawns[index].prefab, crateUnits);
+            writer.Instantiate(unfilteredChunkIndex, spawns[index].prefab, crateUnits);
+
+            var spawnLocalToWorld = LocalToWorldLookup[entity];
 
             for (int i = 0; i < spawns[index].spawnCount; i++)
             {
-                // 적 카운트 세기
-                count.enemyCount += 1;
-                writer.SetComponent(index, entities[index], count);
-
-                // 적 생성
-                writer.Instantiate(index, crateUnits[i], crateUnits);
-                writer.SetComponent(index, crateUnits[i], new LocalTransform
+                // 총알 생성
+                writer.Instantiate(unfilteredChunkIndex, spawns[index].prefab, crateUnits);
+                writer.SetComponent(unfilteredChunkIndex, spawns[index].prefab, new LocalTransform
                 {
-                    Position = new float3(random.NextFloat(-100f, 100f), 1.5f, random.NextFloat(-100f, 100f)),
+                    Position = spawnLocalToWorld.Position,
                     Rotation = quaternion.identity,
-                    Scale = 1f,
+                    Scale = LocalTransformLookup[spawns[index].prefab].Scale,
                 });
-                writer.SetComponent(index, crateUnits[i], new EnemyTag());
-                writer.SetComponent(index, crateUnits[i], new DefaltCharacterComponent
+                writer.SetComponent(unfilteredChunkIndex, spawns[index].prefab, new Bullet
                 {
-                    Speed = 3f,
-                    HP = 100f,
+                    Speed = spawnLocalToWorld.Forward * 20.0f,
                 });
             }
         }
