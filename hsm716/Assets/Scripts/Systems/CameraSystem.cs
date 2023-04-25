@@ -38,7 +38,7 @@ partial struct CameraSystem : ISystem
 
         var cameraTransform = CameraSingleton.Instance.transform;
         var tankTransform = SystemAPI.GetComponent<LocalToWorld>(Target);
-        cameraTransform.position = tankTransform.Position + new float3(0.0f, 40.0f, 0.0f);
+        cameraTransform.position = tankTransform.Position + new float3(0.0f, 120.0f, 0.0f);
         cameraTransform.LookAt(tankTransform.Position, new float3(0.0f, 1.0f, 0.0f));
     }
 }

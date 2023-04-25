@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Net;
 using TMPro;
 using Unity.Burst;
+using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -29,9 +31,23 @@ partial struct SoliderAttackSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        soldierQuery = state.GetEntityQuery(ComponentType.ReadOnly<MySoldierTag>());
-        enemyQuery = state.GetEntityQuery(ComponentType.ReadOnly<EnemyTag>());
+        using var mySoldierQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+       .WithAll<MySoldierTag>()
+       .WithAll<Soldier>()
+       .WithAll<MoveToTarget>();
+        //.WithAll<AttackToTarget>()
+        //.WithAll<LifeStateTag>();
+        soldierQuery = state.GetEntityQuery(mySoldierQueryBuilder);
         state.RequireForUpdate(soldierQuery);
+
+
+        using var enemyQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
+       .WithAll<EnemyTag>()
+       .WithAll<Soldier>()
+       .WithAll<MoveToTarget>();
+        //.WithAll<AttackToTarget>()
+        //.WithAll<LifeStateTag>();
+        enemyQuery = state.GetEntityQuery(enemyQueryBuilder);
         state.RequireForUpdate(enemyQuery);
     }
 
@@ -46,34 +62,86 @@ partial struct SoliderAttackSystem : ISystem
 
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
-
-        new SoldierAttackJob
+        NativeArray<Entity> enemyList = soldierQuery.ToEntityArray(Allocator.Temp);
+        var job = new SoldierAttackJob
         {
-            dt = dt,
-            ecb = ecb,
-        }.ScheduleParallel();
+            localTransformHandles = state.GetComponentTypeHandle<LocalTransform>(true),
+            m_Soldier = state.GetComponentTypeHandle<Soldier>(true),
+            targetComponents = state.GetComponentTypeHandle<MoveToTarget>(true),
+            lifeStateComponent = state.GetComponentTypeHandle<LifeStateTag>(true),
+            attackTargetComponents = state.GetComponentTypeHandle<AttackToTarget>(true),
+            mySoldierTagComponent = state.GetComponentTypeHandle<MySoldierTag>(true),
+            entityHandle = state.GetEntityTypeHandle(),
+
+            deltaTime = dt,
+            writter = ecb
+        };
+        state.Dependency = job.ScheduleParallel(soldierQuery, state.Dependency);
 
         //var tankTransform = SystemAPI.GetComponent<LocalToWorld>();
     }
 
     [BurstCompile]
-    public partial struct SoldierAttackJob : IJobEntity
+    public partial struct SoldierAttackJob : IJobChunk
     {
-        public float dt;
-        public EntityCommandBuffer.ParallelWriter ecb;
+        [ReadOnly] public ComponentTypeHandle<LocalTransform> localTransformHandles;
+        [ReadOnly] public ComponentTypeHandle<Soldier> m_Soldier;
+        [ReadOnly] public ComponentTypeHandle<MoveToTarget> targetComponents;
+        [ReadOnly] public ComponentTypeHandle<AttackToTarget> attackTargetComponents;
+        [ReadOnly] public ComponentTypeHandle<LifeStateTag> lifeStateComponent;
+        [ReadOnly] public ComponentTypeHandle<MySoldierTag> mySoldierTagComponent;
+        [ReadOnly] public float deltaTime;
 
-        // 추가: soldier 엔티티
-        public Entity soldierEntity;
+
+        public EntityTypeHandle entityHandle;
+
+        public EntityCommandBuffer.ParallelWriter writter;
+
 
         [BurstCompile]
-        public void Execute(ref SoldierAspect soldier)
+        public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
         {
-            // 가장 가까운 적이 사정거리 안에 있다면 공격
-            if (soldier.IsInTargetRange(2))
+            NativeArray<Entity> entities = chunk.GetNativeArray(entityHandle);
+            var loalTransforms = chunk.GetNativeArray(ref localTransformHandles);
+            NativeArray<MoveToTarget> targetComponentList = chunk.GetNativeArray(ref targetComponents);
+            NativeArray<AttackToTarget> attackToTargetComponentList = chunk.GetNativeArray(ref attackTargetComponents);
+            var enumerator = new ChunkEntityEnumerator(
+                useEnabledMask,
+                chunkEnabledMask,
+                chunk.Count);
+
+            
+            NativeArray<int> deleteEntityIndex = new NativeArray<int>();
+
+            while (enumerator.NextEntityIndex(out var index))
             {
-                Debug.Log("Soldier is attacking closest enemy!");
-                soldier.KillEnemy(soldier.GetAttackTargetEntity());
+                var entity = entities[index];
+                var loalTransform = loalTransforms[index];
+                var target = attackToTargetComponentList[index];
+
+                // Notice that this is a lambda being passed as parameter to ForEach.
+                float3 targetPosition = target.targetPosition;
+                var localPosition = loalTransform.Position;
+                localPosition.y = 0;
+                if (math.distancesq(localPosition,targetPosition) < 1f)
+                {
+                    loalTransform.Scale += 1;
+                    //loalTransform.Position = new float3(localPosition.x, 0.01f, localPosition.z);
+                    //loalTransform.Rotation = lookRotation;
+                    writter.SetComponent(unfilteredChunkIndex, entity, loalTransform);
+                    writter.DestroyEntity(unfilteredChunkIndex, target.targetEntity);
+                    Debug.Log("탐지!");
+                    
+                    //deleteEntityIndex.Append(unfilteredChunkIndex);
+                }
+                //loalTransform.ro LookAt(targetPosition);
             }
+
+            
+
+
+
+
         }
     }
 }
