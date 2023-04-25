@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 24010378}
   - component: {fileID: 24010377}
   m_Layer: 5
-  m_Name: CountText
+  m_Name: EnemyCountText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

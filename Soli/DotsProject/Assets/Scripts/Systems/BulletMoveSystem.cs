@@ -5,18 +5,19 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
-public partial struct EnemyMoveSystem : ISystem
+public partial struct BulletMoveSystem : ISystem
 {
     EntityQuery query;
 
     private Entity player;
-    private Vector3 targetPos;
+    private Vector3 playerPos;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        using var playerGetQueryBuilder = new EntityQueryBuilder(Allocator.Temp).WithAll<EnemyTag>();
+        using var playerGetQueryBuilder = new EntityQueryBuilder(Allocator.TempJob).WithAll<Bullet>();
         query = state.GetEntityQuery(playerGetQueryBuilder);
 
         state.RequireForUpdate(query);
@@ -35,14 +36,14 @@ public partial struct EnemyMoveSystem : ISystem
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
         player = SystemAPI.GetSingletonEntity<PlayerTag>();
-        targetPos = SystemAPI.GetComponent<LocalTransform>(player).Position;
+        playerPos = SystemAPI.GetComponent<LocalTransform>(player).Position;
 
-        var job = new EnemyMoveJob
+        var job = new BulletMoveJob
         {
             myPositions = state.GetComponentTypeHandle<LocalTransform>(true),
-            characterHandles = state.GetComponentTypeHandle<DefaltCharacterComponent>(true),
+            bulletHandles = state.GetComponentTypeHandle<Bullet>(true),
 
-            targetPosition = targetPos,
+            playerPos = playerPos,
             deltaTime = SystemAPI.Time.DeltaTime,
 
             entityHandle = state.GetEntityTypeHandle(),
@@ -53,12 +54,12 @@ public partial struct EnemyMoveSystem : ISystem
     }
 }
 
-public partial struct EnemyMoveJob : IJobChunk
+public partial struct BulletMoveJob : IJobChunk
 {
     [ReadOnly] public ComponentTypeHandle<LocalTransform> myPositions;
-    [ReadOnly] public ComponentTypeHandle<DefaltCharacterComponent> characterHandles;
+    [ReadOnly] public ComponentTypeHandle<Bullet> bulletHandles;
 
-    [ReadOnly] public float3 targetPosition;
+    [ReadOnly] public float3 playerPos;
     [ReadOnly] public float deltaTime;
 
     public EntityTypeHandle entityHandle;
@@ -68,7 +69,7 @@ public partial struct EnemyMoveJob : IJobChunk
     {
         var entities = chunk.GetNativeArray(entityHandle);
         var localToWorlds = chunk.GetNativeArray(myPositions);
-        var characters = chunk.GetNativeArray(ref characterHandles);
+        var bullets = chunk.GetNativeArray(ref bulletHandles);
 
         var enumerator = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
         while (enumerator.NextEntityIndex(out var index))
@@ -76,14 +77,19 @@ public partial struct EnemyMoveJob : IJobChunk
             var entity = entities[index];
             var localTransform = localToWorlds[index];
 
-            Vector3 dir = targetPosition - localTransform.Position;
-            localTransform.Position += deltaTime * (float3)dir.normalized * characters[index].Speed;
+            var gravity = new float3(0.0f, -9.82f, 0.0f);
 
-            Quaternion rot = Quaternion.identity;
-            rot.eulerAngles = new Vector3(0, Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg, 0);
-            localTransform.Rotation = rot;
+            localTransform.Position += bullets[index].Speed * deltaTime;
+            float3 velocity = bullets[index].Speed + gravity * deltaTime * 0.5f;
 
             writer.SetComponent(unfilteredChunkIndex, entity, localTransform);
+            writer.SetComponent(unfilteredChunkIndex, entity, new Bullet { Speed = velocity });
+
+            var speed = math.lengthsq(bullets[index].Speed);
+            if (speed < 0.1f)
+            {
+                writer.DestroyEntity(unfilteredChunkIndex, entity);
+            }
         }
     }
 }
