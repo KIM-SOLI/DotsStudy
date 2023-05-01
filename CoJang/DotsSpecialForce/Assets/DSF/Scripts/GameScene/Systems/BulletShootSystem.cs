@@ -8,19 +8,12 @@ using Unity.Transforms;
 
 public partial struct BulletShootSystem : ISystem
 {
-    EntityQuery bulletQuery;
     private NativeArray<Vector3> clickedPosition;
 
     [BurstDiscard]
     public void OnCreate(ref SystemState state)
     {
         clickedPosition = new NativeArray<Vector3>(2, Allocator.Persistent);
-
-        var bulletQueryBuilder = new EntityQueryBuilder(Allocator.TempJob).WithAll<BulletTag>();
-        bulletQuery = state.GetEntityQuery(bulletQueryBuilder);
-
-        state.RequireForUpdate(bulletQuery);
-
         InputSystem.ClickAction.performed += OnClick;
     }
 
@@ -58,11 +51,11 @@ public partial struct BulletShootSystem : ISystem
 
             var tag = new BulletTag
             {
-                BulletSpeed = 20.0f,
+                BulletSpeed = 30.0f,
                 BulletDamage = 1,
-                BulletRange = 150.0f,
-                PanetrateNum = 1,
-                spawnedPosition = clickedPosition[0],
+                BulletRange = 500.0f,
+                PanetrateNum = 3,
+                spawnedPosition = clickedPosition[1],
 
                 self = entity,
             };
@@ -71,8 +64,10 @@ public partial struct BulletShootSystem : ISystem
             var transform = entityManager.GetComponentData<LocalTransform>(entity);
             transform.Position = clickedPosition[1];
             transform.Rotation = Quaternion.LookRotation(clickedPosition[0] - clickedPosition[1]);
-
             entityManager.SetComponentData(entity, transform);
+
+            entityManager.AddComponent<DestoryTag>(entity);
+            entityManager.SetComponentData(entity, new DestoryTag { IsDestoryed = false, self = entity });
         }
     }
 }

@@ -12,6 +12,5 @@ public struct ChaserTag : IComponentData
 
 public struct ChaserComponent : IComponentData
 {
-	public int HP;
-
+    public int HP;
 }

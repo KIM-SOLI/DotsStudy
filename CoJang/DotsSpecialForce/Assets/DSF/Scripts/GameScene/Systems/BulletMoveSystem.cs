@@ -8,52 +8,59 @@ using Unity.Mathematics;
 [BurstCompile]
 public partial struct BulletMoveSystem : ISystem
 {
-    //private EntityQuery bulletQuery;
-
+    EntityQuery entityQuery;
     public void OnCreate(ref SystemState state)
     {
-        //var bulletQueryBuilder = new EntityQueryBuilder(Allocator.TempJob).WithAll<BulletTag>();
-        //bulletQuery = state.GetEntityQuery(bulletQueryBuilder);
-        //state.RequireForUpdate(bulletQuery);
-
-        //bulletQueryBuilder.Dispose();
+        var entityQueryBuilder = new EntityQueryBuilder(Allocator.TempJob).WithAll<BulletTag>();
+        entityQuery = state.GetEntityQuery(entityQueryBuilder);
+        state.RequireForUpdate(entityQuery);
+        entityQueryBuilder.Dispose();
     }
 
     public void OnDestroy(ref SystemState state)
     {
     }
 
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         var deltaTime = SystemAPI.Time.DeltaTime;
 
-        var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+        var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
+        var entityArray = entityQuery.ToEntityArray(Allocator.TempJob);
 
         var bulletMovementJob = new BulletMovementJob
         {
             DeltaTime = deltaTime,
 
-            ecb = ecb,
+            ecb = ecb.AsParallelWriter(),
+            entities = entityArray,
         };
-        bulletMovementJob.Schedule();
+        bulletMovementJob.ScheduleParallel();
     }
 }
 
 public partial struct BulletMovementJob : IJobEntity
 {
     [ReadOnly] public float DeltaTime;
-    public EntityCommandBuffer ecb;
 
-    public void Execute(ref LocalTransform transform, in BulletTag bulletData)
+    [ReadOnly] public NativeArray<Entity> entities;
+    public EntityCommandBuffer.ParallelWriter ecb;
+
+    public void Execute(ref LocalTransform transform, in BulletTag bulletData, in DestoryTag tag)
     {
-        transform.Position += transform.Forward() * (bulletData.BulletSpeed * DeltaTime);
-
-        if (math.distancesq(transform.Position, bulletData.spawnedPosition) > bulletData.BulletRange)
+        if (bulletData.self != Entity.Null && !tag.IsDestoryed)
         {
-            if (bulletData.self != Entity.Null)
+            transform.Position += transform.Forward() * (bulletData.BulletSpeed * DeltaTime);
+
+            if (bulletData.PanetrateNum <= 0 ||
+                (math.distancesq(transform.Position, bulletData.spawnedPosition) > bulletData.BulletRange))
             {
-                ecb.DestroyEntity(bulletData.self);
+                var tempData = tag;
+                tempData.IsDestoryed = true;
+
+                ecb.SetComponent(bulletData.self.Index, bulletData.self, tempData);
             }
         }
     }

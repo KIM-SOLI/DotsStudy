@@ -29,6 +29,11 @@ public class BulletAuthoring : MonoBehaviour
                 BulletSpeed = authoring.defaultBulletSpeed,
                 PanetrateNum = authoring.defaultPanetrateNum,
             });
+
+            AddComponent(new DestoryTag
+            {
+                IsDestoryed = false,
+            });
         }
     }
 }
