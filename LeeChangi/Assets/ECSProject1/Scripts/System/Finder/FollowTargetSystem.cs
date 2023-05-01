@@ -34,7 +34,7 @@ namespace Sample1
               .WithAll<EnemyTargetComponentData>()
               .WithAll<RangedWeaponComponentData>()
               .WithAll<MovableUnitComponentData>();
-            
+
             entityQuery = state.GetEntityQuery(entityQueryBuilder);
 
 
@@ -63,7 +63,7 @@ namespace Sample1
                 rangedWeaponHandles = state.GetComponentTypeHandle<RangedWeaponComponentData>(true),
                 targetPositions = state.GetComponentLookup<LocalTransform>(true),
                 localTransformHandles = state.GetComponentTypeHandle<LocalTransform>(true),
-                
+
                 writer = ecb.AsParallelWriter(),
                 deltaTime = SystemAPI.Time.DeltaTime,
             };
@@ -118,7 +118,10 @@ namespace Sample1
                     local.Position += dir;
                     writer.SetComponent(unfilteredChunkIndex, entity, local);
                 }
-
+                else
+                {
+                    writer.SetComponentEnabled<LockOnTargetComponentData>(unfilteredChunkIndex, entity, true);
+                }
             }
         }
     }

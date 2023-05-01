@@ -18,12 +18,16 @@ namespace Sample1
         public float HP = 100;
 
         public GameObject hpStateObject;
+        public GameObject teamColor;
         public class TeamUnitBaker : Baker<TeamUnitAuthoring>
         {
             public override void Bake(TeamUnitAuthoring authoring)
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
-                AddComponent(entity, new TeamUnitComponentData { });
+                AddComponent(entity, new TeamUnitComponentData
+                {
+                    colorEntity = GetEntity(authoring.teamColor, TransformUsageFlags.Dynamic),
+                });
                 AddComponent(entity, new EnemyTargetComponentData { });
                 AddComponent(entity, new RangedWeaponComponentData
                 {
@@ -33,8 +37,9 @@ namespace Sample1
                 });
                 AddComponent(entity, new MovableUnitComponentData { moveSpeed = authoring.Speed });
 
-                AddComponent(entity, new BodyStat { 
-                    HP = authoring.HP, 
+                AddComponent(entity, new BodyStat
+                {
+                    HP = authoring.HP,
                     Armor = 0,
                     hpStateEntity = GetEntity(authoring.hpStateObject, TransformUsageFlags.Dynamic),
                 });
@@ -43,7 +48,7 @@ namespace Sample1
                 SetComponentEnabled<EnemyTargetComponentData>(entity, false);
                 SetComponentEnabled<LockOnTargetComponentData>(entity, false);
 
-                
+
             }
         }
     }
@@ -52,6 +57,7 @@ namespace Sample1
     public struct TeamUnitComponentData : IComponentData
     {
         public int TeamIndex;
+        public Entity colorEntity;
     }
 
     public struct RangedWeaponComponentData : IComponentData

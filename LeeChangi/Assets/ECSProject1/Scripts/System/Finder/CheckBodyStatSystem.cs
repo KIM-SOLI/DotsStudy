@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Drawing;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Rendering;
 using Unity.Transforms;
 
@@ -9,43 +11,50 @@ namespace Sample1
 {
 
 
-	public class CheckBodyStatSystemAuthoring : IGetBakedSystem
-	{
-		public CheckBodyStatSystemAuthoring(){}
-		public Type GetSystemType()
-		{
-			return typeof(CheckBodyStatSystem);
-		}
-	}
-		
-	[DisableAutoCreation]
-	[BurstCompile]
-	public partial struct CheckBodyStatSystem : ISystem
-	{
+    public class CheckBodyStatSystemAuthoring : IGetBakedSystem
+    {
+        public CheckBodyStatSystemAuthoring() { }
+        public Type GetSystemType()
+        {
+            return typeof(CheckBodyStatSystem);
+        }
+    }
+
+    [DisableAutoCreation]
+    [BurstCompile]
+    public partial struct CheckBodyStatSystem : ISystem
+    {
         EntityQuery unitQuery;
 
         [BurstCompile]
-		public void OnCreate(ref SystemState state)
-		{
+        public void OnCreate(ref SystemState state)
+        {
             using var targetterQueryBuilder = new EntityQueryBuilder(Allocator.Temp)
                .WithAll<BodyStat>();
 
-			unitQuery = state.GetEntityQuery(targetterQueryBuilder);
+            unitQuery = state.GetEntityQuery(targetterQueryBuilder);
             state.RequireForUpdate(unitQuery);
         }
 
-		[BurstCompile]
-		public void OnDestroy(ref SystemState state)
-		{
-		}
+        [BurstCompile]
+        public void OnDestroy(ref SystemState state)
+        {
+        }
 
-		[BurstCompile]
-		public void OnUpdate(ref SystemState state)
-		{
-			//var job = new CheckBodyStatJob { };
-			//job.ScheduleParallel();
-		}
-	}
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
+        {
+            var ecbSingleton = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
+
+
+            var job = new CheckBodyJob
+            {
+                Ecb = ecb.AsParallelWriter(),
+            };
+            job.ScheduleParallel();
+        }
+    }
 
     [BurstCompile]
     public partial struct CheckBodyJob : IJobEntity
@@ -54,10 +63,17 @@ namespace Sample1
         [BurstCompile]
         public void Execute([ChunkIndexInQuery] int chunkIndex, Entity entity, ref BodyStat bodyStat)
         {
-			Ecb.SetComponent(chunkIndex, bodyStat.hpStateEntity, new URPMaterialPropertyBaseColor
-			{
-				//Value = new 
-			});
+            Ecb.SetComponent(chunkIndex, bodyStat.hpStateEntity, new URPMaterialPropertyBaseColor
+            {
+                Value = GetColor(bodyStat.HP),
+            });
+        }
+
+        public float4 GetColor(float hp)
+        {
+            const float max = 100;
+            var hpRate = hp / max;
+            return new float4(1 - hpRate, hpRate, 0, 1);
         }
     }
 }

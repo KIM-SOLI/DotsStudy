@@ -276,6 +276,8 @@ MonoBehaviour:
   LockOffRange: 2
   Speed: 1
   HP: 100
+  hpStateObject: {fileID: 1447199763105165643}
+  teamColor: {fileID: 2567647164334164826}
 --- !u!114 &2035859875617381235
 MonoBehaviour:
   m_ObjectHideFlags: 0
