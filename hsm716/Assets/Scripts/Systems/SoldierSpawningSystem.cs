@@ -65,7 +65,7 @@ partial struct SoldierSpawningSystem : ISystem
 
             ecb.SetComponent(vehicle, new LocalTransform
             {
-                Position = new float3(random.NextInt(-200, 200), 0, random.NextInt(-200, 200)),
+                Position = new float3(random.NextInt(-200, 200), 0.75f, random.NextInt(-200, 200)),
                 Rotation = quaternion.identity,
                 Scale = 1f
             });
@@ -83,7 +83,7 @@ partial struct SoldierSpawningSystem : ISystem
 
             ecb.SetComponent(vehicle, new LocalTransform
             {
-                Position = new float3(random.NextInt(-5, 5), 0, random.NextInt(-5, 5)),
+                Position = new float3(random.NextInt(-5, 5), 0.75f, random.NextInt(-5, 5)),
                 Rotation = quaternion.identity,
                 Scale = 1f
             });

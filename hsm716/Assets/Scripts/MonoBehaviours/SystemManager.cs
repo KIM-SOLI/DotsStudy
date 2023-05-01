@@ -12,6 +12,10 @@ public class SystemManager : MonoBehaviour
     public bool isActiveTurretShootingSystem;
 
     public AnimationClip clip1;
+
+    public Mesh quadMesh;
+    public Material spriteSheetMaterial;
+
     private void Awake()
     {
         instance = this;

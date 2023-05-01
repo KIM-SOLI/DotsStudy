@@ -17,7 +17,7 @@ class SoldierAuthoring : UnityEngine.MonoBehaviour
             AddComponent(new Soldier()
             {
             });
-            AddComponent(new LifeStateTag());
+            AddComponent(new LifeStateTag() { level=1});
         }   
 
     }

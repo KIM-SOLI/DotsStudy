@@ -27,10 +27,7 @@ partial struct TurretShootingSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        if (SystemManager.instance.isActiveTurretShootingSystem == false)
-        {
-            return;
-        }
+
         // ComponentLookup structures have to be updated every frame.
         m_WorldTransformLookup.Update(ref state);
 

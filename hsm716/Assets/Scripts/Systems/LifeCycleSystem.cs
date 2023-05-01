@@ -32,20 +32,9 @@ partial struct LifeCycleSystem : ISystem
         {
             var entity = entities[i];
             
-            var lifeState = entityManager.GetComponentData<LifeStateTag>(entity).state;
+            var level = entityManager.GetComponentData<LifeStateTag>(entity).level;
 
-            switch(lifeState)
-            {
-                case 0:
-                    // normal
-                    //entityManager.SetComponentData<Mesh>(entity)
-                    break;
-                case 1:
-                    // die
-                    
-                    entityManager.DestroyEntity(entity);
-                    break;
-            }
+          
         }
         entities.Dispose();
     }

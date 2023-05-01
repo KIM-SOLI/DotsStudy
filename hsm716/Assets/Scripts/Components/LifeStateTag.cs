@@ -3,5 +3,5 @@ using Unity.Mathematics;
 
 public struct LifeStateTag : IComponentData
 {
-    public int state;
+    public int level;
 }

@@ -19,8 +19,6 @@ using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
 using static UnityEngine.GraphicsBuffer;
 
-// Contrarily to ISystem, SystemBase systems are classes.
-// They are not Burst compiled, and can use managed code.
 
 [BurstCompile]
 partial struct SoliderAttackSystem : ISystem
@@ -35,8 +33,7 @@ partial struct SoliderAttackSystem : ISystem
        .WithAll<MySoldierTag>()
        .WithAll<Soldier>()
        .WithAll<MoveToTarget>();
-        //.WithAll<AttackToTarget>()
-        //.WithAll<LifeStateTag>();
+        
         soldierQuery = state.GetEntityQuery(mySoldierQueryBuilder);
         state.RequireForUpdate(soldierQuery);
 
@@ -45,8 +42,7 @@ partial struct SoliderAttackSystem : ISystem
        .WithAll<EnemyTag>()
        .WithAll<Soldier>()
        .WithAll<MoveToTarget>();
-        //.WithAll<AttackToTarget>()
-        //.WithAll<LifeStateTag>();
+       
         enemyQuery = state.GetEntityQuery(enemyQueryBuilder);
         state.RequireForUpdate(enemyQuery);
     }
@@ -59,7 +55,6 @@ partial struct SoliderAttackSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         var dt = SystemAPI.Time.DeltaTime;
-
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
         NativeArray<Entity> enemyList = soldierQuery.ToEntityArray(Allocator.Temp);
@@ -77,8 +72,6 @@ partial struct SoliderAttackSystem : ISystem
             writter = ecb
         };
         state.Dependency = job.ScheduleParallel(soldierQuery, state.Dependency);
-
-        //var tankTransform = SystemAPI.GetComponent<LocalToWorld>();
     }
 
     [BurstCompile]
@@ -92,9 +85,7 @@ partial struct SoliderAttackSystem : ISystem
         [ReadOnly] public ComponentTypeHandle<MySoldierTag> mySoldierTagComponent;
         [ReadOnly] public float deltaTime;
 
-
         public EntityTypeHandle entityHandle;
-
         public EntityCommandBuffer.ParallelWriter writter;
 
 
@@ -105,43 +96,33 @@ partial struct SoliderAttackSystem : ISystem
             var loalTransforms = chunk.GetNativeArray(ref localTransformHandles);
             NativeArray<MoveToTarget> targetComponentList = chunk.GetNativeArray(ref targetComponents);
             NativeArray<AttackToTarget> attackToTargetComponentList = chunk.GetNativeArray(ref attackTargetComponents);
+            NativeArray<LifeStateTag> lifeStateTags = chunk.GetNativeArray(ref lifeStateComponent);
+            
             var enumerator = new ChunkEntityEnumerator(
                 useEnabledMask,
                 chunkEnabledMask,
                 chunk.Count);
 
-            
-            NativeArray<int> deleteEntityIndex = new NativeArray<int>();
 
             while (enumerator.NextEntityIndex(out var index))
             {
                 var entity = entities[index];
                 var loalTransform = loalTransforms[index];
                 var target = attackToTargetComponentList[index];
+                var life = lifeStateTags[index];
 
-                // Notice that this is a lambda being passed as parameter to ForEach.
                 float3 targetPosition = target.targetPosition;
                 var localPosition = loalTransform.Position;
                 localPosition.y = 0;
-                if (math.distancesq(localPosition,targetPosition) < 1f)
+                if (math.distancesq(localPosition, targetPosition) < 2f * loalTransform.Scale)
                 {
+                    life.level += 1;
                     loalTransform.Scale += 1;
-                    //loalTransform.Position = new float3(localPosition.x, 0.01f, localPosition.z);
-                    //loalTransform.Rotation = lookRotation;
                     writter.SetComponent(unfilteredChunkIndex, entity, loalTransform);
+                    writter.SetComponent(unfilteredChunkIndex, entity, life);
                     writter.DestroyEntity(unfilteredChunkIndex, target.targetEntity);
-                    Debug.Log("Å½Áö!");
-                    
-                    //deleteEntityIndex.Append(unfilteredChunkIndex);
                 }
-                //loalTransform.ro LookAt(targetPosition);
             }
-
-            
-
-
-
-
         }
     }
 }

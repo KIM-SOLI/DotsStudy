@@ -88,7 +88,7 @@ partial struct SoliderMovementSystem : ISystem
             NativeArray<Entity> entities = chunk.GetNativeArray(entityHandle);
             var loalTransforms = chunk.GetNativeArray(ref localTransformHandles);
             NativeArray<MoveToTarget> targetComponentList = chunk.GetNativeArray(ref targetComponents);
-
+            
             var enumerator = new ChunkEntityEnumerator(
                 useEnabledMask,
                 chunkEnabledMask,
@@ -99,6 +99,7 @@ partial struct SoliderMovementSystem : ISystem
                 var entity = entities[index];
                 var loalTransform = loalTransforms[index];
                 var target = targetComponentList[index];
+           
 
                 // Notice that this is a lambda being passed as parameter to ForEach.
                 float3 targetPosition = target.targetPosition;
@@ -108,11 +109,11 @@ partial struct SoliderMovementSystem : ISystem
                 if (Vector3.Distance(targetPosition, localPosition) > 1f)
                 {
                     Quaternion lookRotation = Quaternion.LookRotation(moveDirection, math.up());
-                   
+                    
                     loalTransform.Position += moveDirection * deltaTime * target.moveSpeed;
-                    //loalTransform.Position = new float3(localPosition.x, 0.01f, localPosition.z);
                     loalTransform.Rotation = lookRotation;
                     writter.SetComponent(unfilteredChunkIndex,entity, loalTransform);
+                    
                 }
                 //loalTransform.ro LookAt(targetPosition);
             }

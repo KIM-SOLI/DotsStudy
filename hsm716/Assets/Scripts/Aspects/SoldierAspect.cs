@@ -24,8 +24,8 @@ public readonly partial struct SoldierAspect : IAspect
 
     public int LifeState
     {
-        get => lifeStateComponent.ValueRO.state;
-        set => lifeStateComponent.ValueRW.state = value;
+        get => lifeStateComponent.ValueRO.level;
+        set => lifeStateComponent.ValueRW.level = value;
     }
     public void Move(float deltaTime) 
     {
@@ -49,11 +49,6 @@ public readonly partial struct SoldierAspect : IAspect
     public bool IsInTargetRange(float range)
     {
         return math.distancesq(attackTargetComponent.ValueRO.targetPosition, transform.LocalTransform.Position) <= range - 1;
-    }
-    public void KillEnemy(Entity targetEntity)
-    {
-        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-        entityManager.SetComponentData<LifeStateTag>(targetEntity, new LifeStateTag() { state = 1 });
     }
 
     public void TestFunction()
