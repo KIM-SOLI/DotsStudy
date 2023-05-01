@@ -49,7 +49,7 @@ public partial struct ChaserJob : IJobEntity
 
         if (math.distancesq(transform.LocalPosition, targetPosition) <= boundary)
         {
-            Debug.Log("I Got it!");
+            // Debug.Log("I Got it!");
             // transform.LocalPosition = targetPosition + (-dir * boundary); // 밀어내기 테스트
         }
         else

@@ -10,85 +10,87 @@ using Unity.Mathematics;
 [BurstCompile]
 partial struct MovementSystem : ISystem
 {
-	private NativeArray<Vector3> clickedPosition;
+    private NativeArray<Vector3> clickedPosition;
 
-	public void OnCreate(ref SystemState state)
-	{
-		Debug.Log("MovementSystem OnCreate!");
-		clickedPosition = new NativeArray<Vector3>(1, Allocator.Persistent);
+    public void OnCreate(ref SystemState state)
+    {
+        Debug.Log("MovementSystem OnCreate!");
+        clickedPosition = new NativeArray<Vector3>(1, Allocator.Persistent);
 
-		state.RequireForUpdate<MovementComponentData>();
-		InputSystem.ClickAction.performed += OnMouseClick;
+        state.RequireForUpdate<MovementComponentData>();
+        InputSystem.ClickAction.performed += OnMouseClick;
 
-		InputSystem.MovementAction.started += OnKeyboardDown;
-		InputSystem.MovementAction.canceled += OnKeyboardUp;
-	}
+        InputSystem.MovementAction.started += OnKeyboardDown;
+        InputSystem.MovementAction.canceled += OnKeyboardUp;
+    }
 
-	public void OnDestroy(ref SystemState state)
-	{
-		Debug.Log("MovementSystem OnDestroy!");
-		InputSystem.ClickAction.performed -= OnMouseClick;
+    public void OnDestroy(ref SystemState state)
+    {
+        Debug.Log("MovementSystem OnDestroy!");
+        InputSystem.ClickAction.performed -= OnMouseClick;
 
-		clickedPosition.Dispose();
-	}
+        InputSystem.MovementAction.started -= OnKeyboardDown;
+        InputSystem.MovementAction.canceled -= OnKeyboardUp;
 
-	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
-	{
-		var delta = SystemAPI.Time.DeltaTime;
+        clickedPosition.Dispose();
+    }
 
-		var job = new MovementJob
-		{
-			deltaTime = delta,
-			destPoint = clickedPosition[0],
-			epsilon = 0.5f
-		};
-		job.Schedule();
-	}
+    [BurstCompile]
+    public void OnUpdate(ref SystemState state)
+    {
+        var delta = SystemAPI.Time.DeltaTime;
 
-	public void OnMouseClick(InputAction.CallbackContext context)
-	{
-		Debug.Log("MovementSystem OnMouseClick");
+        var job = new MovementJob
+        {
+            deltaTime = delta,
+            destPoint = clickedPosition[0],
+            epsilon = 0.5f
+        };
+        job.Schedule();
+    }
 
-		if (Raycaster.ShootRay())
-		{
-			clickedPosition[0] = Raycaster.Hit.point;
+    public void OnMouseClick(InputAction.CallbackContext context)
+    {
 
-			Debug.Log("MovementSystem OnRayHit: " + clickedPosition[0]);
-		}
+        if (Raycaster.ShootRay())
+        {
+            clickedPosition[0] = Raycaster.Hit.point;
 
-	}
+            //Debug.Log("MovementSystem OnRayHit: " + clickedPosition[0]);
+        }
 
-	public void OnKeyboardDown(InputAction.CallbackContext context)
-	{
-		if (InputSystem.IsKeyDown(InputSystem.MovementAction, "A"))
-		{
-			Debug.Log("OnKeyboardDown : " + "A");
-		}
-	}
+    }
 
-	public void OnKeyboardUp(InputAction.CallbackContext context)
-	{
-		if (InputSystem.IsKeyDown(InputSystem.MovementAction, "A"))
-		{
-			Debug.Log("OnKeyboardDown : " + "A");
-		}
-	}
+    public void OnKeyboardDown(InputAction.CallbackContext context)
+    {
+        if (InputSystem.IsKeyDown(InputSystem.MovementAction, "A"))
+        {
+            Debug.Log("OnKeyboardDown : " + "A");
+        }
+    }
+
+    public void OnKeyboardUp(InputAction.CallbackContext context)
+    {
+        if (InputSystem.IsKeyDown(InputSystem.MovementAction, "A"))
+        {
+            Debug.Log("OnKeyboardUp : " + "A");
+        }
+    }
 }
 
 [BurstCompile]
 public partial struct MovementJob : IJobEntity
 {
-	[ReadOnly] public float3 destPoint;
-	[ReadOnly] public float deltaTime;
+    [ReadOnly] public float3 destPoint;
+    [ReadOnly] public float deltaTime;
 
-	[ReadOnly] public float epsilon;
+    [ReadOnly] public float epsilon;
 
-	void Execute(ref MovementAspect aspect, in MovementComponentData component)
-	{
-		if (math.distancesq(aspect.LocalPosition, destPoint) > epsilon)
-		{
-			aspect.MoveToPointOnlyXZ(destPoint, deltaTime);
-		}
-	}
+    void Execute(ref MovementAspect aspect, in MovementComponentData component)
+    {
+        if (math.distancesq(aspect.LocalPosition, destPoint) > epsilon)
+        {
+            aspect.MoveToPointOnlyXZ(destPoint, deltaTime);
+        }
+    }
 }
