@@ -32,7 +32,7 @@ public partial struct BulletMoveSystem : ISystem
 
         var bulletMovementJob = new BulletMovementJob
         {
-            DeltaTime = deltaTime,
+            deltaTime = deltaTime,
 
             ecb = ecb.AsParallelWriter(),
             entities = entityArray,
@@ -43,7 +43,7 @@ public partial struct BulletMoveSystem : ISystem
 
 public partial struct BulletMovementJob : IJobEntity
 {
-    [ReadOnly] public float DeltaTime;
+    [ReadOnly] public float deltaTime;
 
     [ReadOnly] public NativeArray<Entity> entities;
     public EntityCommandBuffer.ParallelWriter ecb;
@@ -52,7 +52,7 @@ public partial struct BulletMovementJob : IJobEntity
     {
         if (bulletData.self != Entity.Null && !tag.IsDestoryed)
         {
-            transform.Position += transform.Forward() * (bulletData.BulletSpeed * DeltaTime);
+            transform.Position += transform.Forward() * (bulletData.BulletSpeed * deltaTime);
 
             if (bulletData.PanetrateNum <= 0 ||
                 (math.distancesq(transform.Position, bulletData.spawnedPosition) > bulletData.BulletRange))

@@ -53,7 +53,7 @@ public partial struct CircleCollisionSystem : ISystem
             bulletTagType = state.GetComponentTypeHandle<BulletTag>(true),
 
             ecb = ecb.AsParallelWriter(),
-            entityhandle = typeHandle,
+            entityHandle = typeHandle,
 
             chaserEntites = chaserArray,
             bulletEntites = bulletArray,
@@ -64,6 +64,9 @@ public partial struct CircleCollisionSystem : ISystem
         };
 
         state.Dependency = job.ScheduleParallel(chaserQuery, state.Dependency);
+
+        chaserArray.Dispose(state.Dependency);
+        bulletArray.Dispose(state.Dependency);
     }
 }
 
@@ -83,12 +86,12 @@ public partial struct CircleCollisionJob : IJobChunk
     [ReadOnly] public NativeArray<Entity> chaserEntites;
     [ReadOnly] public NativeArray<Entity> bulletEntites;
 
-    [ReadOnly] public EntityTypeHandle entityhandle;
+    [ReadOnly] public EntityTypeHandle entityHandle;
     public EntityCommandBuffer.ParallelWriter ecb;
 
     public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
     {
-        var entities = chunk.GetNativeArray(entityhandle);
+        var entities = chunk.GetNativeArray(entityHandle);
         var transforms = chunk.GetNativeArray(ref localTransformType);
         var chaserDatas = chunk.GetNativeArray(ref chaserComponentType);
 
@@ -142,10 +145,15 @@ public partial struct CircleCollisionJob : IJobChunk
                     continue;
                 }
 
+                if (destroyTag.IsDestoryed)
+                {
+                    break;
+                }
+
                 var position = otherTransforms[bullet].Position;
 
                 float distance = math.distancesq(transform.Position, position);
-                if (distance <= boundary)
+                if (distance < boundary)
                 {
                     // HP 皑家 贸府
                     chaserData.HP -= bulletData.BulletDamage;
@@ -153,7 +161,7 @@ public partial struct CircleCollisionJob : IJobChunk
                     // Death 贸府
                     if (chaserData.HP <= 0)
                     {
-                        Debug.Log("chaser Destoyed!");
+                        //Debug.Log("chaser Destoyed!");
                         destroyTag.IsDestoryed = true;
                     }
 
