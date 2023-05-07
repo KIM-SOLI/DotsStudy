@@ -54,7 +54,7 @@ partial struct SoldierSpawningSystem : ISystem
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
-        var vehicles = CollectionHelper.CreateNativeArray<Entity>(1000, Allocator.Temp);
+        var vehicles = CollectionHelper.CreateNativeArray<Entity>(3000, Allocator.Temp);
         ecb.Instantiate(config.TankPrefab, vehicles);
         
         var queryMask = m_BaseColorQuery.GetEntityQueryMask();
@@ -67,7 +67,7 @@ partial struct SoldierSpawningSystem : ISystem
             {
                 Position = new float3(random.NextInt(-200, 200), 0.75f, random.NextInt(-200, 200)),
                 Rotation = quaternion.identity,
-                Scale = 1f
+                Scale = random.NextInt(1, 3)
             });
             ecb.AddComponent(vehicle,new EnemyTag() { dirChangeTime=-1f});
         }

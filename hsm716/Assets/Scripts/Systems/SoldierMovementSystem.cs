@@ -105,7 +105,7 @@ partial struct SoliderMovementSystem : ISystem
                 float3 targetPosition = target.targetPosition;
                 var localPosition = loalTransform.Position;
                 float3 moveDirection = math.normalize(targetPosition - localPosition);
-
+                moveDirection.y = 0.01f;
                 if (Vector3.Distance(targetPosition, localPosition) > 1f)
                 {
                     Quaternion lookRotation = Quaternion.LookRotation(moveDirection, math.up());

@@ -116,12 +116,20 @@ partial struct SoliderAttackSystem : ISystem
                 localPosition.y = 0;
                 if (math.distancesq(localPosition, targetPosition) < 2f * loalTransform.Scale)
                 {
-                    life.level += 1;
-                    loalTransform.Scale += 1;
-                    writter.SetComponent(unfilteredChunkIndex, entity, loalTransform);
-                    writter.SetComponent(unfilteredChunkIndex, entity, life);
-                    writter.DestroyEntity(unfilteredChunkIndex, target.targetEntity);
+                    if (loalTransform.Scale >= target.targetScale)
+                    {
+                        life.level += 1;
+                        loalTransform.Scale += 1;
+                        writter.SetComponent(unfilteredChunkIndex, entity, loalTransform);
+                        writter.SetComponent(unfilteredChunkIndex, entity, life);
+                        writter.DestroyEntity(unfilteredChunkIndex, target.targetEntity);
+                    }
+                    else
+                    {
+                        writter.DestroyEntity(unfilteredChunkIndex, entity);
+                    }
                 }
+
             }
         }
     }

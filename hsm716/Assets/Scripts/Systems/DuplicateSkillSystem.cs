@@ -56,6 +56,8 @@ partial class DuplicateSkillSystem : SystemBase
         {
             // 특정 게임 오브젝트 엔티티 생성
             var newEntity = entityManager.Instantiate(config.TankPrefab);
+            entityManager.SetComponentData(newEntity, new LocalTransform { Position = spawnPosition,
+                                                                           Scale = 1f});
             entityManager.AddComponent<MySoldierTag>(newEntity);
             entityManager.AddComponent<MoveToTarget>(newEntity);
             //entityManager.SetComponentData<LocalTransform>(newEntity,new LocalTransform { Position = spawnPosition });

@@ -5,4 +5,5 @@ public struct AttackToTarget : IComponentData
 {
     public Entity targetEntity;
     public float3 targetPosition;
+    public float targetScale;
 }

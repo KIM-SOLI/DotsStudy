@@ -60,7 +60,7 @@ partial class FindMouseToTargetSystem : SystemBase
             float3 soldierPosition = soldierEntityLocalTransform.Position;
             float minDist = 100000000f;
             float3 closestEnemyPosition = float3.zero;
-
+            float targetScale = 1f;
             // 적을 순회하며 가장 가까운 적을 찾
             var enemyQuery = entityManager.CreateEntityQuery(typeof(EnemyTag));
             var entityArray = enemyQuery.ToEntityArray(Allocator.TempJob);
@@ -75,11 +75,13 @@ partial class FindMouseToTargetSystem : SystemBase
                     minDist = dist;
                     closestEnemyPosition = enemyPosition;
                     tempEntity = enemyEntity;
+                    targetScale = localTransform.Scale;
                 }
             }
             entityArray.Dispose();
             attackComp.targetEntity = tempEntity;
             attackComp.targetPosition = closestEnemyPosition;
+            attackComp.targetScale = targetScale;
         }).WithoutBurst().Run();
 
 
